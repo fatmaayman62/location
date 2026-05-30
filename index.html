@@ -1,9 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GPS Mobile Test</title>
+    <title>MedLink - Smart Arabic Location Picker (Photon API)</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -19,152 +23,225 @@
         }
         .card {
             background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            max-width: 400px;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            max-width: 550px;
             width: 100%;
         }
-        button {
-            background-color: #2563eb;
-            color: white;
-            border: none;
-            padding: 14px 28px;
-            font-size: 16px;
+        .search-container {
+            position: relative;
+            margin-bottom: 15px;
+            text-align: right;
+        }
+        label {
             font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.2s;
-            width: 100%;
+            font-size: 15px;
+            color: #374151;
+            display: block;
+            margin-bottom: 8px;
         }
-        button:hover {
-            background-color: #1d4ed8;
+        input[type="text"] {
+            width: 100%;
+            padding: 14px;
+            font-size: 15px;
+            border: 2px solid #2563eb; 
+            border-radius: 8px;
+            box-sizing: border-box;
+            outline: none;
+            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.1);
+            text-align: right;
+        }
+        .autocomplete-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 0 0 8px 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: none;
+            text-align: right;
+        }
+        .autocomplete-item {
+            padding: 12px;
+            font-size: 13px;
+            cursor: pointer;
+            border-bottom: 1px solid #f3f4f6;
+            color: #1f2937;
+        }
+        .autocomplete-item:hover {
+            background-color: #eff6ff;
+            color: #2563eb;
+        }
+        #map {
+            height: 320px;
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            z-index: 1;
         }
         .result-box {
-            margin-top: 20px;
-            text-align: left;
+            margin-top: 15px;
+            text-align: right;
             background: #f9fafb;
             padding: 15px;
             border-radius: 8px;
             border: 1px solid #e5e7eb;
-            display: none;
-            word-break: break-word;
         }
-        .status {
-            margin-top: 15px;
-            color: #4b5563;
-            font-size: 14px;
+        .payload-box {
+            margin-top: 10px;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            color: #16a34a;
+            font-size: 13px;
+            direction: ltr;
+            text-align: left;
         }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>Mobile GPS Tester 📱</h2>
-    <p style="color: #6b7280; font-size: 14px;">Test your dynamic English location fetching.</p>
+    <h3 style="margin: 0 0 15px 0; text-align: center; color: #1e2937;">محدد المواقع المتطور - MedLink 🔍</h3>
     
-    <button id="getLocBtn">Get My Exact Location</button>
-    
-    <div id="status" class="status"></div>
-    
-    <div id="resultBox" class="result-box">
-        <p><strong>Latitude:</strong> <span id="latText"></span></p>
-        <p><strong>Longitude:</strong> <span id="lonText"></span></p>
-        <p><strong>Location Name:</strong> <span id="nameText"></span></p>
+    <div class="search-container">
+        <label for="addressSearch">✍️ اكتب اسم قريتك أو منطقتك (Photon API):</label>
+        <input type="text" id="addressSearch" placeholder="مثال: الرمالي، مصطاي، قويسنا...">
+        <div id="autocompleteResults" class="autocomplete-results"></div>
+    </div>
+
+    <div id="map"></div>
+
+    <div class="result-box">
+        <span style="font-size: 13px; color: #4b5563; font-weight: bold;">📍 الموقع المحدد حالياً:</span>
+        <div id="currentPlaceName" style="font-weight: bold; color: #2563eb; margin-top: 6px; font-size: 14px;">جاري التحديد...</div>
+        
+        <div class="payload-box">
+            🚀 Payload for Backend Team:<br>
+            <pre style="margin: 5px 0 0 0;" id="backendJson">{ "latitude": 30.4874, "longitude": 31.1319 }</pre>
+        </div>
     </div>
 </div>
 
 <script>
-// دالة جلب الموقع الديناميكية اللي عملناها مع صلاحيات الـ GPS
-function getFinalLocationWithPermission() {
-  return new Promise((resolve, reject) => {
-    if (!navigator.geolocation) {
-      reject("Geolocation is not supported by this browser.");
-      return;
-    }
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+    iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+});
 
-    const geoOptions = {
-      enableHighAccuracy: true,
-      timeout: 100000,
-      maximumAge: 0
-    };
+let startLat = 30.4874;
+let startLon = 31.1319;
 
-    async function fetchCoordinatesAndName() {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const lat = position.coords.latitude;
-          const lon = position.coords.longitude;
+const map = L.map('map').setView([startLat, startLon], 12);
 
-          try {
-            const response = await fetch(
-              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=en`
-            );
-            const data = await response.json();
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap'
+}).addTo(map);
 
-            resolve({
-              latitude: lat,
-              longitude: lon,
-              locationName: data.display_name || "Unknown Location"
-            });
-          } catch (error) {
-            resolve({
-              latitude: lat,
-              longitude: lon,
-              locationName: "Location name details currently unavailable"
-            });
-          }
-        },
-        (error) => {
-          if (error.code === error.PERMISSION_DENIED) {
-            reject("🚨 Please allow GPS permission in your phone browser settings.");
-          } else {
-            reject(`Geolocation Error: ${error.message}`);
-          }
-        },
-        geoOptions
-      );
-    }
+const marker = L.marker([startLat, startLon], { draggable: true }).addTo(map);
 
-    if (navigator.permissions) {
-      navigator.permissions.query({ name: 'geolocation' })
-        .then((permissionStatus) => {
-          if (permissionStatus.state === 'granted' || permissionStatus.state === 'prompt') {
-            fetchCoordinatesAndName();
-          } else if (permissionStatus.state === 'denied') {
-            reject("🚨 Location access is Blocked! Check your browser site settings.");
-          }
-        })
-        .catch(() => fetchCoordinatesAndName());
-    } else {
-      fetchCoordinatesAndName();
-    }
-  });
+function updateLocationUI(lat, lon, displayName) {
+    document.getElementById('currentPlaceName').innerText = displayName;
+    document.getElementById('backendJson').innerText = JSON.stringify({
+        latitude: parseFloat(lat.toFixed(6)),
+        longitude: parseFloat(lon.toFixed(6))
+    }, null, 2);
 }
 
-// ربط عناصر واجهة المستخدم بالكود
-document.getElementById('getLocBtn').addEventListener('click', async () => {
-    const statusDiv = document.getElementById('status');
-    const resultBox = document.getElementById('resultBox');
-    
-    statusDiv.innerText = "⏳ Requesting GPS access and fetching data...";
-    resultBox.style.display = "none";
-    
+updateLocationUI(startLat, startLon, "قويسنا، المنوفية، مصر");
+
+const searchInput = document.getElementById('addressSearch');
+const resultsDiv = document.getElementById('autocompleteResults');
+
+searchInput.addEventListener('input', debounce(async (e) => {
+    const query = e.target.value;
+    if (query.length < 3) { resultsDiv.style.display = 'none'; return; }
+
     try {
-        const locationData = await getFinalLocationWithPermission();
+        // ✨ استخدام Photon API المدمج مع فلتر ذكي يدعم العربي والـ Fuzzy Search
+        const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&lang=ar&limit=5`;
+        const response = await fetch(url);
+        const data = await response.json();
         
-        statusDiv.innerText = "✅ Location fetched successfully!";
-        document.getElementById('latText').innerText = locationData.latitude;
-        document.getElementById('lonText').innerText = locationData.longitude;
-        document.getElementById('nameText').innerText = locationData.locationName;
-        
-        resultBox.style.display = "block";
-    } catch (error) {
-        statusDiv.innerText = "";
-        alert(error);
+        // Photon يرجع البيانات في هيئة GeoJSON (features)
+        const locations = data.features || [];
+
+        resultsDiv.innerHTML = '';
+        if (locations.length > 0) {
+            resultsDiv.style.display = 'block';
+        } else {
+            resultsDiv.style.display = 'none';
+        }
+
+        locations.forEach(loc => {
+            const props = loc.properties;
+            const coords = loc.geometry.coordinates; // تأتي بنظام [lon, lat]
+            
+            // صياغة الاسم بشكل منسق ومفهوم للمستخدم العربي
+            const name = props.name || "";
+            const city = props.city || props.town || "";
+            const state = props.state || "";
+            const fullDisplayName = [name, city, state].filter(Boolean).join('، ') || "موقع تم العثور عليه";
+
+            const option = document.createElement('div');
+            option.className = 'autocomplete-item';
+            option.innerText = fullDisplayName;
+            
+            option.onclick = () => {
+                const lon = parseFloat(coords[0]);
+                const lat = parseFloat(coords[1]);
+                
+                searchInput.value = fullDisplayName;
+                resultsDiv.style.display = 'none';
+                
+                map.flyTo([lat, lon], 16, { animate: true, duration: 1.5 });
+                marker.setLatLng([lat, lon]);
+                
+                updateLocationUI(lat, lon, fullDisplayName);
+                marker.bindPopup(`<b>الموقع المؤكد:</b><br>${fullDisplayName}`).openPopup();
+            };
+            resultsDiv.appendChild(option);
+        });
+    } catch (err) { 
+        console.error("خطأ في جلب بيانات البحث:", err); 
+    }
+}, 400));
+
+// الـ Reverse Geocoding عند سحب الدبوس يدويًا (يمكن الإبقاء على Nominatim هنا لأنه مستقر جداً في الإحداثيات العكسية)
+marker.on('dragend', async function () {
+    const pos = marker.getLatLng();
+    try {
+        const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.lat}&lon=${pos.lng}&accept-language=ar`;
+        const response = await fetch(url);
+        const data = await response.json();
+        updateLocationUI(pos.lat, pos.lng, data.display_name || "موقع مخصص على الخريطة");
+    } catch {
+        updateLocationUI(pos.lat, pos.lng, "موقع مخصص على الخريطة");
     }
 });
-</script>
 
+function debounce(func, delay) {
+    let timer;
+    return function (...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => func.apply(this, args), delay);
+    };
+}
+
+document.addEventListener('click', (e) => {
+    if (e.target !== searchInput) resultsDiv.style.display = 'none';
+});
+</script>
 </body>
 </html>
