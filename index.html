@@ -3,63 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MedLink - Pure Auto Address Detector</title>
+    <title>MedLink - Auto Location Easy</title>
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: sans-serif;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             min-height: 100vh;
             background-color: #f3f4f6;
             margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
         }
         .card {
             background: white;
             padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            max-width: 500px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            max-width: 450px;
             width: 100%;
             text-align: right;
         }
-        .status-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        .status-badge {
-            padding: 6px 12px;
-            font-size: 13px;
-            border-radius: 20px;
-            background-color: #f3f4f6;
-            color: #4b5563;
-            font-weight: bold;
-        }
         .address-box {
             background-color: #eff6ff;
-            border: 2px dashed #3b82f6;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-        }
-        .address-title {
-            font-size: 14px;
-            color: #1e3a8a;
-            font-weight: bold;
-            margin-bottom: 8px;
-        }
-        .address-text {
-            font-size: 16px;
-            color: #1d4ed8;
-            font-weight: bold;
-            line-height: 1.6;
+            border: 2px dashed #2563eb;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
         }
         .payload-box {
             background: #f0fdf4;
@@ -68,134 +37,89 @@
             border-radius: 8px;
             font-family: monospace;
             color: #16a34a;
-            font-size: 13px;
             direction: ltr;
             text-align: left;
-        }
-        .btn-retry {
-            width: 100%;
-            background-color: #10b981;
-            color: white;
-            border: none;
-            padding: 12px;
-            font-size: 14px;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-top: 15px;
-            transition: background 0.2s;
-        }
-        .btn-retry:hover {
-            background-color: #059669;
         }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <div class="status-container">
-        <h3 style="margin: 0; color: #1e2937;">تحديد العنوان تلقائياً 📡</h3>
-        <div id="gpsStatus" class="status-badge">⏳ جاري طلب الـ GPS...</div>
-    </div>
+    <h3 style="margin-top: 0; color: #1e2937;">📡 تحديد العنوان أوتوماتيك</h3>
+    <p style="font-size: 14px; color: #6b7280;">السيستم يلقط موقعك الحالي أوتوماتيك فور فتح الصفحة.</p>
 
     <div class="address-box">
-        <div class="address-title">🛣️ اسم الشارع / المنطقة الحالية:</div>
-        <div id="streetName" class="address-text">جاري قراءة الـ GPS وتحديد مكانك المباشر...</div>
+        <strong>📍 مكانك الحالي (أوتوماتيك):</strong>
+        <div id="cityName" style="color: #2563eb; font-weight: bold; margin-top: 5px;">جاري تشغيل الـ GPS...</div>
     </div>
 
     <div class="payload-box">
         📦 Payload for Backend:<br>
-        <pre style="margin: 8px 0 0 0; font-weight: bold;" id="backendJson">{ "latitude": 0, "longitude": 0, "address": "" }</pre>
+        <pre id="backendJson">{ "latitude": 0, "longitude": 0 }</pre>
     </div>
-
-    <button class="btn-retry" onclick="autoDetectStreet()">تحديث الموقع الحالي 🔄</button>
 </div>
 
 <script>
-// دالة لقط الموقع التلقائي الحقيقي
-function autoDetectStreet() {
-    const statusBadge = document.getElementById('gpsStatus');
-    const streetText = document.getElementById('streetName');
+// دالة بتشتغل أوتوماتيك أول ما الصفحة تفتح
+async function getAutomaticLocation() {
+    let cityNameDiv = document.getElementById('cityName');
+    let backendJsonDiv = document.getElementById('backendJson');
 
-    if (!navigator.geolocation) {
-        statusBadge.innerText = "❌ غير مدعوم";
-        statusBadge.style.backgroundColor = "#fee2e2";
-        statusBadge.style.color = "#991b1b";
-        streetText.innerText = "متصفحك لا يدعم تحديد الموقع التلقائي.";
-        return;
-    }
-
-    statusBadge.innerText = "⏳ جاري التحديد البث المباشر...";
-    statusBadge.style.backgroundColor = "#f3f4f6";
-    statusBadge.style.color = "#4b5563";
-
-    // إعدادات صارمة لضمان تشغيل حساس الـ GPS الحقيقي ومنع اعتماد المتصفح على مكان الـ IP الكاذب
-    const geoOptions = {
-        enableHighAccuracy: true, // إجبار الجهاز على استخدام الـ GPS أو أبراج التغطية وليس الـ IP المركزي
-        timeout: 15000,           // مهلة كافية للاتصال بالأقمار الصناعية
-        maximumAge: 0             // تصفير الكاش تماماً لرفض أي موقع قديم مخزن في المتصفح
+    // 1. إعدادات صارمة لطلب الـ GPS الحقيقي ومنع الكاش الكاذب
+    const gpsOptions = {
+        enableHighAccuracy: true, // تشغيل حساس الـ GPS الفعلي بأعلى دقة
+        timeout: 10000,           // مهلة 10 ثواني للقط الإشارة
+        maximumAge: 0             // تصفير الكاش (ممنوع استخدام موقع قديم)
     };
 
+    // 2. طلب الموقع التلقائي من المتصفح
     navigator.geolocation.getCurrentPosition(
         async (position) => {
-            const lat = position.coords.latitude;
-            const lon = position.coords.longitude;
+            // لو وافقتي على الإذن، هيلقط خطوط الطول والعرض فوراً
+            let lat = position.coords.latitude;
+            let lon = position.coords.longitude;
 
-            statusBadge.innerText = "✅ متصل";
-            statusBadge.style.backgroundColor = "#dcfce7";
-            statusBadge.style.color = "#166534";
+            cityNameDiv.innerText = "جاري ترجمة الإحداثيات لاسم الشارع...";
 
             try {
-                // طلب استخراج المسميات العربية من الإحداثيات الدقيقة الصافية
-                const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ar`;
-                const response = await fetch(url);
-                const data = await response.json();
+                // 3. نبعت الإحداثيات للسيرفر عشان يترجمها لاسم شارع وقرية بالعربي
+                let response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ar`);
+                let data = await response.json();
 
-                const address = data.address || {};
-                
-                // فلترة وعزل التسميات لتبدأ من الشارع والحي ثم القرية والمركز
-                const street = address.road || address.suburb || address.neighbourhood || "";
-                const city = address.village || address.town || address.city || "";
-                const state = address.state || "";
-                
-                const fullStreetAddress = [street, city, state].filter(Boolean).join('، ') || data.display_name;
+                let address = data.address || {};
+                // نجمع اسم الشارع والقرية أو المركز
+                let street = address.road || address.suburb || "";
+                let city = address.village || address.town || address.city || "";
+                let fullAddress = [street, city].filter(Boolean).join('، ') || data.display_name;
 
-                // تحديث واجهة المستخدم بالشارع الصحيح
-                streetText.innerText = fullStreetAddress;
+                // 4. نعرض الاسم العربي على الشاشة أوتوماتيك
+                cityNameDiv.innerText = fullAddress;
 
-                // طباعة الأوبجكت الجاهز للإرسال الفوري لـ API المشروع
-                document.getElementById('backendJson').innerText = JSON.stringify({
-                    latitude: parseFloat(lat.toFixed(6)),
-                    longitude: parseFloat(lon.toFixed(6)),
-                    detected_address: fullStreetAddress
+                // 5. نجهز الـ Payload للباكيند
+                backendJsonDiv.innerText = JSON.stringify({
+                    latitude: lat,
+                    longitude: lon,
+                    address: fullAddress
                 }, null, 2);
 
-            } catch (err) {
-                streetText.innerText = "تم لقط الإحداثيات، وفشل جلب الاسم العربي مؤقتاً.";
-                document.getElementById('backendJson').innerText = JSON.stringify({
-                    latitude: parseFloat(lat.toFixed(6)),
-                    longitude: parseFloat(lon.toFixed(6)),
-                    detected_address: "Unknown"
-                }, null, 2);
+            } catch (error) {
+                cityNameDiv.innerText = "تم لقط الموقع، وفشل جلب الاسم العربي مؤقتاً";
             }
         },
         (error) => {
-            statusBadge.style.backgroundColor = "#fee2e2";
-            statusBadge.style.color = "#991b1b";
+            // لو حصل مشكلة أو الإذن اترفض
             if (error.code === 1) {
-                statusBadge.innerText = "❌ الإذن مرفوض";
-                streetText.innerText = "يرجى السماح للموقع بالوصول إلى الـ GPS لتحديد مكانك الفعلي في قويسنا.";
+                cityNameDiv.innerText = "❌ يرجى الضغط على 'سماح / Allow' للـ GPS ليظهر موقعك";
             } else {
-                statusBadge.innerText = "❌ عطل في الـ GPS";
-                streetText.innerText = "تأكد من تفعيل خدمة الموقع (Location) في جهازك وتحديث الصفحة.";
+                cityNameDiv.innerText = "❌ فشل لقط الـ GPS (تأكدي من تشغيل Location في الموبايل)";
             }
         },
-        geoOptions
+        gpsOptions // تمرير الإعدادات الصارمة هنا
     );
 }
 
-// تشغيل الفانكشن تلقائياً عند تحميل الصفحة بالكامل
-window.onload = autoDetectStreet;
+// 🚀 تشغيل الدالة أوتوماتيك فور تحميل الصفحة
+window.onload = getAutomaticLocation;
 </script>
 
 </body>
