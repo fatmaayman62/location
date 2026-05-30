@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MedLink - Pure Village & City Detector</title>
+    <title>MedLink - Ultimate Location Picker</title>
     <style>
         body {
             font-family: sans-serif;
@@ -31,13 +31,29 @@
             margin: 15px 0;
         }
         .detail-item {
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             font-size: 15px;
             color: #1e2937;
         }
         .detail-item span {
             color: #2563eb;
             font-weight: bold;
+        }
+        .manual-section {
+            background: #fff7ed;
+            border: 1px solid #ffedd5;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        select, input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            box-sizing: border-box;
         }
         .payload-box {
             background: #f0fdf4;
@@ -48,20 +64,42 @@
             color: #16a34a;
             direction: ltr;
             text-align: left;
+            margin-top: 15px;
         }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h3 style="margin-top: 0; color: #1e2937;">📍 تحديد تفاصيل (القرية، المركز، المحافظة)</h3>
-    <p style="font-size: 14px; color: #6b7280;">السيستم بيفكك العنوان أوتوماتيك لتقسيمات واضحة للباكيند.</p>
+    <h3 style="margin-top: 0; color: #1e2937;">📍 محدد الموقع الذكي المتكامل</h3>
+    <p style="font-size: 14px; color: #6b7280;">السيستم يلقط الإحداثيات أوتوماتيك، ويسمح بتحديد القرية والشارع بدقة بالغة.</p>
 
     <div class="address-box">
-        <div class="detail-item">🏘️ القرية / المنطقة: <span id="villageSpan">جاري التحديد...</span></div>
-        <div class="detail-item">🛣️ الشارع الحالي: <span id="streetSpan">جاري التحديد...</span></div>
-        <div class="detail-item">🏢 المركز / المدينة: <span id="citySpan">جاري التحديد...</span></div>
-        <div class="detail-item">🗺️ المحافظة: <span id="governorateSpan">جاري التحديد...</span></div>
+        <div class="detail-item">🏢 المركز / المدينة: <span id="citySpan">قويسنا</span></div>
+        <div class="detail-item">🗺️ المحافظة: <span id="governorateSpan">المنوفية</span></div>
+        <div class="detail-item">🏘️ القرية / المنطقة الحاليّة: <span id="villageSpan">جاري التحديد...</span></div>
+        <div class="detail-item">🛣️ الشارع: <span id="streetSpan">جاري التحديد...</span></div>
+    </div>
+
+    <div class="manual-section">
+        <label style="font-weight: bold; color: #c2410c;">✍️ لتأكيد تفاصيل عنوانك بدقة:</label>
+        
+        <label for="villageSelect">اختر القرية / المنطقة:</label>
+        <select id="villageSelect" onchange="updatePayloadFields()">
+            <option value="الرمالي">الرمالي</option>
+            <option value="مصطاي">مصطاي</option>
+            <option value="طه شبرا">طه شبرا</option>
+            <option value="أبنهس">أبنهس</option>
+            <option value="قويسنا البلد">قويسنا البلد</option>
+            <option value="المنشأة الكبرى">المنشأة الكبرى</option>
+            <option value="بجيرم">بجيرم</option>
+            <option value="ميت برة">ميت برة</option>
+            <option value="وسط المدينة / قويسنا المحطة">وسط المدينة / قويسنا المحطة</option>
+            <option value="أخرى">قرية أخرى...</option>
+        </select>
+
+        <label for="streetInput">اسم الشارع / علامة مميزة:</label>
+        <input type="text" id="streetInput" placeholder="مثال: شارع المحطة، بجوار صيدلية..." oninput="updatePayloadFields()">
     </div>
 
     <div class="payload-box">
@@ -72,90 +110,80 @@
 
 <script>
 const LOCATION_IQ_TOKEN = "pk.fab70d19cd0f26b0b2630069bd17c07c"; 
+let globalLat = 0;
+let globalLon = 0;
 
-async function getExactVillageAndCity() {
-    const villageSpan = document.getElementById('villageSpan');
-    const streetSpan = document.getElementById('streetSpan');
-    const citySpan = document.getElementById('citySpan');
-    const govSpan = document.getElementById('governorateSpan');
-    const backendJsonDiv = document.getElementById('backendJson');
-
-    const gpsOptions = {
-        enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 0
-    };
+async function autoDetectCoordinates() {
+    const gpsOptions = { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 };
 
     navigator.geolocation.getCurrentPosition(
         async (position) => {
-            let lat = position.coords.latitude;
-            let lon = position.coords.longitude;
+            globalLat = position.coords.latitude;
+            globalLon = position.coords.longitude;
 
             try {
-                let url = `https://us1.locationiq.com/v1/reverse?key=${LOCATION_IQ_TOKEN}&lat=${lat}&lon=${lon}&format=json&accept-language=ar`;
+                let url = `https://us1.locationiq.com/v1/reverse?key=${LOCATION_IQ_TOKEN}&lat=${globalLat}&lon=${globalLon}&format=json&accept-language=ar`;
                 let response = await fetch(url);
                 let data = await response.json();
 
                 if (data && data.address) {
                     let addr = data.address;
                     
-                    // 1. قراءة تفصيلية مباشرة من أوبجكت العنوان
-                    let currentStreet = addr.road || "شارع فرعي";
-                    let currentGov = addr.state || "المنوفية";
-                    
-                    // 2. استخراج اسم القرية والمركز بذكاء عن طريق تفكيك الـ display_name الكامل
-                    let fullDisplayName = data.display_name || "";
-                    let addressParts = fullDisplayName.split(',').map(part => part.trim());
+                    // محاولة قراءة القرية والشارع أوتوماتيك لو الإشارة قوية
+                    let detectedVillage = addr.village || addr.suburb || addr.neighbourhood || "";
+                    let detectedStreet = addr.road || "";
 
-                    // الداتا في مصر بترجع غالباً بالترتيب ده: [الشارع، الحي/القرية، المركز، المحافظة، مصر]
-                    // هنعمل فلترة صريحة عشان نضمن لقط "قويسنا" كمركز
-                    let currentCity = "قويسنا"; 
-                    let currentVillage = addr.village || addr.suburb || addr.neighbourhood || addr.hamlet || "داخل قويسنا";
-
-                    // فحص يدوي في أجزاء العنوان المرجعة للتأكد من طرد أي مسمى كاذب لبركة السبع وثبيت قويسنا
-                    for (let part of addressParts) {
-                        if (part.includes("قويسنا")) {
-                            currentCity = "قويسنا";
-                        }
+                    if(detectedVillage && !detectedVillage.includes("بركة السبع")) {
+                        document.getElementById('villageSpan').innerText = detectedVillage;
+                        // تحديث الـ Select لو القرية المكتشفة موجودة فيه
+                        document.getElementById('villageSelect').value = "أخرى";
+                    } else {
+                        document.getElementById('villageSpan').innerText = document.getElementById('villageSelect').value;
                     }
 
-                    if (currentVillage.includes("بركة السبع") || currentVillage === currentCity) {
-                        currentVillage = addressParts[1] || addressParts[0] || "القرية الحالية";
+                    if(detectedStreet) {
+                        document.getElementById('streetSpan').innerText = detectedStreet;
+                        document.getElementById('streetInput').value = detectedStreet;
+                    } else {
+                        document.getElementById('streetSpan').innerText = "شارع فرعي";
                     }
-
-                    // 3. تحديث واجهة المستخدم فوراً بالتفصيص المظبوط
-                    villageSpan.innerText = currentVillage;
-                    streetSpan.innerText = currentStreet;
-                    citySpan.innerText = currentCity;
-                    govSpan.innerText = currentGov;
-
-                    // 4. تجهيز الأوبجكت النظيف جداً اللي الباكيند بيحلم بيه 😉
-                    backendJsonDiv.innerText = JSON.stringify({
-                        latitude: lat,
-                        longitude: lon,
-                        village: currentVillage,
-                        street: currentStreet,
-                        city: currentCity,
-                        governorate: currentGov,
-                        formatted_payload: `قرية ${currentVillage}، مركز ${currentCity}، محافظة ${currentGov}`
-                    }, null, 2);
-
-                } else {
-                    villageSpan.innerText = "فشل التقسيم أوتوماتيك";
                 }
-
+                updatePayloadFields();
             } catch (error) {
-                villageSpan.innerText = "خطأ في الاتصال بالسيرفر";
+                updatePayloadFields();
             }
         },
         (error) => {
-            villageSpan.innerText = "❌ يرجى تفعيل الـ GPS وإعطاء الصلاحية للمتصفح";
+            document.getElementById('villageSpan').innerText = "تم حظر الـ GPS يدويًا";
+            updatePayloadFields();
         },
         gpsOptions
     );
 }
 
-window.onload = getExactVillageAndCity;
+// فانكشن بتجمع البيانات الدقيقة (GPS + الاختيارات) وتعمل الـ Payload النضيف للباكيند
+function updatePayloadFields() {
+    let selectedVillage = document.getElementById('villageSelect').value;
+    let typedStreet = document.getElementById('streetInput').value || "شارع فرعي";
+    
+    // تحديث العرض فوق
+    document.getElementById('villageSpan').innerText = selectedVillage;
+    document.getElementById('streetSpan').innerText = typedStreet;
+
+    // تجهيز الـ JSON الاحترافي للباكيند
+    document.getElementById('backendJson').innerText = JSON.stringify({
+        latitude: globalLat,
+        longitude: globalLon,
+        governorate: "المنوفية",
+        city: "قويسنا",
+        village: selectedVillage,
+        street: typedStreet,
+        formatted_address: `قرية ${selectedVillage}، شارع ${typedStreet}، مركز قويسنا، محافظة المنوفية`
+    }, null, 2);
+}
+
+// التفعيل التلقائي
+window.onload = autoDetectCoordinates;
 </script>
 
 </body>
