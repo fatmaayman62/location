@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>محدد الموقع الدقيق</title>
+<title>محدد الموقع الذكي</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -28,27 +28,47 @@ body {
   min-height: 100vh;
   display: flex;
   justify-content: center;
-  padding: 28px 16px 60px;
+  padding: 24px 16px 60px;
   color: var(--text);
   background-image:
     radial-gradient(ellipse 70% 35% at 50% 0%, rgba(59,130,246,.13) 0%, transparent 60%),
     radial-gradient(ellipse 35% 25% at 85% 75%, rgba(6,182,212,.08) 0%, transparent 50%);
 }
 
-.wrap { width: 100%; max-width: 540px; display: flex; flex-direction: column; gap: 14px; }
+.wrap { width: 100%; max-width: 560px; display: flex; flex-direction: column; gap: 14px; }
 
-/* header */
 .hd { text-align: center; padding: 6px 0; }
-.hd h1 { font-size: 24px; font-weight: 900;
+.hd h1 {
+  font-size: 24px; font-weight: 900;
   background: linear-gradient(120deg,#60a5fa,#06b6d4);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-.hd p { font-size: 12.5px; color: var(--sub); margin-top: 3px; }
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.hd p { font-size: 12px; color: var(--sub); margin-top: 4px; line-height: 1.6; }
 
-/* card */
 .card { background: var(--s1); border: 1px solid var(--border); border-radius: 14px; padding: 18px; }
 
+/* steps indicator */
+.steps { display: flex; align-items: center; justify-content: center; gap: 0; margin-bottom: 4px; }
+.step {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  flex: 1;
+}
+.step-circle {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: var(--muted);
+  background: var(--s2); transition: all .3s; position: relative; z-index: 1;
+}
+.step-line { flex: 1; height: 2px; background: var(--border); transition: background .3s; margin-top: -18px; }
+.step-label { font-size: 10px; color: var(--muted); font-weight: 600; text-align: center; }
+.step.active .step-circle { border-color: var(--blue); color: var(--blue); background: rgba(59,130,246,.12); }
+.step.done .step-circle { border-color: var(--green); color: var(--green); background: rgba(16,185,129,.12); }
+.step.done .step-label, .step.active .step-label { color: var(--text); }
+.step-line.done { background: var(--green); }
+
 /* button */
-.btn-detect {
+.btn {
   width: 100%; padding: 13px;
   background: linear-gradient(135deg, #2563eb, #0891b2);
   border: none; border-radius: 12px;
@@ -57,13 +77,19 @@ body {
   display: flex; align-items: center; justify-content: center; gap: 10px;
   transition: opacity .2s, transform .1s;
 }
-.btn-detect:hover { opacity: .88; }
-.btn-detect:active { transform: scale(.98); }
-.btn-detect:disabled { opacity: .45; cursor: not-allowed; }
+.btn:hover { opacity: .88; }
+.btn:active { transform: scale(.98); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn.secondary {
+  background: var(--s2); border: 1px solid var(--border);
+  color: var(--sub); font-size: 13px; padding: 10px;
+}
+.btn.secondary:hover { border-color: var(--blue); color: var(--blue); opacity: 1; }
+.btn.success-btn { background: linear-gradient(135deg, #059669, #0891b2); }
 
 .dot-pulse { width: 9px; height: 9px; border-radius: 50%; background: #fff; display: none; }
-.btn-detect.loading .dot-pulse { display: block; animation: dp 1s ease-in-out infinite; }
-.btn-detect.loading .ico { display: none; }
+.btn.loading .dot-pulse { display: block; animation: dp 1s ease-in-out infinite; }
+.btn.loading .ico { display: none; }
 @keyframes dp { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.6);opacity:.4} }
 
 /* status */
@@ -80,12 +106,13 @@ body {
 .status.work .sd { animation: dp 1s infinite; }
 .status.ok     { color: var(--green); border-color: rgba(16,185,129,.3); background: rgba(16,185,129,.06); }
 .status.err    { color: var(--red);   border-color: rgba(239,68,68,.3);  background: rgba(239,68,68,.06); }
+.status.warn   { color: var(--amber); border-color: rgba(245,158,11,.3); background: rgba(245,158,11,.06); }
 
-/* coords strip */
+/* coords */
 .coords { display: flex; gap: 10px; }
 .cp { flex: 1; background: var(--s2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
-.cp .cl { font-size: 10.5px; font-weight: 700; color: var(--muted); margin-bottom: 3px; text-transform: uppercase; letter-spacing: .4px; }
-.cp .cv { font-size: 12.5px; font-weight: 700; color: var(--cyan); font-family: monospace; }
+.cp .cl { font-size: 10px; font-weight: 700; color: var(--muted); margin-bottom: 3px; text-transform: uppercase; letter-spacing: .4px; }
+.cp .cv { font-size: 12px; font-weight: 700; color: var(--cyan); font-family: monospace; }
 
 /* accuracy */
 .acc-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--sub); }
@@ -97,14 +124,32 @@ body {
 /* map */
 .map-box {
   border-radius: 12px; overflow: hidden; border: 1px solid var(--border);
-  height: 190px; background: var(--s2);
+  height: 220px; background: var(--s2);
   display: flex; align-items: center; justify-content: center;
+  position: relative;
 }
 .map-box iframe { width: 100%; height: 100%; border: none; display: block; }
 .map-ph { color: var(--muted); font-size: 13px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 7px; }
 .map-ph svg { opacity: .25; }
+.map-open-btn {
+  position: absolute; bottom: 10px; left: 10px;
+  background: rgba(15,23,36,.85); border: 1px solid var(--border);
+  color: var(--cyan); font-size: 11px; font-family: 'Cairo', sans-serif;
+  padding: 5px 10px; border-radius: 7px; cursor: pointer;
+  font-weight: 600; backdrop-filter: blur(4px);
+  text-decoration: none; display: none;
+}
 
-/* fields grid */
+/* tip box */
+.tip {
+  background: rgba(245,158,11,.07);
+  border: 1px solid rgba(245,158,11,.25);
+  border-radius: 10px; padding: 12px 14px;
+  font-size: 12.5px; color: #fcd34d; line-height: 1.7;
+}
+.tip strong { color: var(--amber); }
+
+/* fields */
 .fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
 .fgrid .full { grid-column: 1/-1; }
 
@@ -113,25 +158,39 @@ body {
   border-radius: 11px; padding: 11px 13px;
   transition: border-color .2s;
 }
-.fblock:focus-within { border-color: rgba(59,130,246,.45); }
+.fblock:focus-within { border-color: rgba(59,130,246,.5); }
+.fblock.confirmed { border-color: rgba(16,185,129,.4); }
 
 .flabel {
-  font-size: 10.5px; font-weight: 700; color: var(--muted);
+  font-size: 10px; font-weight: 700; color: var(--muted);
   text-transform: uppercase; letter-spacing: .4px;
-  margin-bottom: 5px; display: flex; align-items: center; gap: 4px;
+  margin-bottom: 5px; display: flex; align-items: center; justify-content: space-between;
 }
-.fval { font-size: 13.5px; font-weight: 700; color: var(--text); min-height: 19px; margin-bottom: 7px; line-height: 1.4; }
-.fval.emp { color: var(--muted); font-weight: 400; font-style: italic; font-size: 12.5px; }
+.fcheck { color: var(--green); font-size: 12px; display: none; }
+.fblock.confirmed .fcheck { display: block; }
+
+.fval { font-size: 13.5px; font-weight: 700; color: var(--text); min-height: 20px; margin-bottom: 7px; line-height: 1.4; }
+.fval.emp { color: var(--muted); font-weight: 400; font-style: italic; font-size: 12px; }
 
 .finput {
   width: 100%; background: var(--bg);
   border: 1px solid var(--border); border-radius: 7px;
-  padding: 6px 9px; color: var(--text);
-  font-family: 'Cairo', sans-serif; font-size: 12.5px;
+  padding: 7px 10px; color: var(--text);
+  font-family: 'Cairo', sans-serif; font-size: 13px;
   outline: none; transition: border-color .2s;
 }
 .finput:focus { border-color: var(--blue); }
 .finput::placeholder { color: var(--muted); }
+
+/* confirm bar */
+.confirm-bar {
+  background: rgba(16,185,129,.07);
+  border: 1px solid rgba(16,185,129,.25);
+  border-radius: 10px; padding: 12px 14px;
+  display: flex; align-items: center; gap: 10px;
+  font-size: 13px; color: #6ee7b7;
+}
+.confirm-bar svg { flex-shrink: 0; }
 
 /* payload */
 .ph { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
@@ -150,100 +209,203 @@ body {
   border-radius: 9px; padding: 13px; font-family: 'Courier New', monospace;
   font-size: 11.5px; line-height: 1.75; overflow-x: auto; white-space: pre;
 }
-.k { color: #7dd3fc; } .s { color: #86efac; } .n { color: #fbbf24; } .nl { color: #f87171; }
+.k { color: #7dd3fc; } .sv { color: #86efac; } .nv { color: #fbbf24; } .nl { color: #f87171; }
 
-/* source */
-.src { font-size: 11px; color: var(--muted); text-align: left; direction: ltr; }
+/* watch progress */
+.watch-bar {
+  background: var(--s2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 14px;
+}
+.watch-label { font-size: 12px; color: var(--sub); margin-bottom: 8px; display: flex; justify-content: space-between; }
+.watch-track { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.watch-fill { height: 100%; background: linear-gradient(90deg, var(--blue), var(--cyan)); border-radius: 3px; transition: width .5s; }
+
+.hidden { display: none !important; }
 </style>
 </head>
 <body>
 <div class="wrap">
 
+  <!-- Header -->
   <div class="hd">
-    <h1>📍 محدد الموقع الدقيق</h1>
-    <p>تحديد الشارع · الحي · المدينة · المحافظة بدقة عالية عبر LocationIQ</p>
+    <h1>📍 محدد الموقع الذكي</h1>
+    <p>GPS دقيق + خريطة تفاعلية + تأكيد يدوي<br>مثل Uber و Careem بالظبط 🚀</p>
   </div>
 
-  <button class="btn-detect" id="detectBtn" onclick="detect()">
-    <span class="ico">🎯</span>
-    <span class="dot-pulse"></span>
-    <span id="btnTxt">تحديد موقعي الآن</span>
-  </button>
-
-  <div class="status idle" id="st">
-    <div class="sd"></div>
-    <span id="stTxt">في انتظار تفعيل GPS…</span>
+  <!-- Steps -->
+  <div class="card" style="padding:14px 18px">
+    <div class="steps">
+      <div class="step active" id="step1">
+        <div class="step-circle">1</div>
+        <div class="step-label">GPS</div>
+      </div>
+      <div class="step-line" id="line1"></div>
+      <div class="step" id="step2">
+        <div class="step-circle">2</div>
+        <div class="step-label">الخريطة</div>
+      </div>
+      <div class="step-line" id="line2"></div>
+      <div class="step" id="step3">
+        <div class="step-circle">3</div>
+        <div class="step-label">تأكيد</div>
+      </div>
+    </div>
   </div>
 
-  <!-- coords -->
-  <div class="coords" id="coordsRow" style="display:none">
-    <div class="cp"><div class="cl">خط العرض</div><div class="cv" id="cvLat">—</div></div>
-    <div class="cp"><div class="cl">خط الطول</div><div class="cv" id="cvLon">—</div></div>
-    <div class="cp"><div class="cl">دقة GPS</div><div class="cv" id="cvAcc">—</div></div>
+  <!-- Step 1: GPS -->
+  <div id="phase1">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button class="btn" id="detectBtn" onclick="startGPS()">
+        <span class="ico">🎯</span>
+        <span class="dot-pulse"></span>
+        <span id="btnTxt">تحديد موقعي بدقة عالية</span>
+      </button>
+
+      <div class="status idle" id="st">
+        <div class="sd"></div>
+        <span id="stTxt">اضغط الزر لتفعيل GPS</span>
+      </div>
+
+      <!-- Watch progress -->
+      <div class="watch-bar hidden" id="watchBar">
+        <div class="watch-label">
+          <span>🔄 يتم تحسين الدقة تلقائياً...</span>
+          <span id="watchCount">0/5 قراءات</span>
+        </div>
+        <div class="watch-track"><div class="watch-fill" id="watchFill" style="width:0%"></div></div>
+      </div>
+
+      <!-- Coords -->
+      <div class="coords hidden" id="coordsRow">
+        <div class="cp"><div class="cl">خط العرض</div><div class="cv" id="cvLat">—</div></div>
+        <div class="cp"><div class="cl">خط الطول</div><div class="cv" id="cvLon">—</div></div>
+        <div class="cp"><div class="cl">دقة GPS</div><div class="cv" id="cvAcc">—</div></div>
+      </div>
+
+      <!-- Accuracy -->
+      <div class="acc-row hidden" id="accRow">
+        <span>مستوى الدقة:</span>
+        <span class="acc-tag" id="accTag">—</span>
+        <span id="accM">—</span>
+      </div>
+    </div>
   </div>
 
-  <!-- accuracy badge -->
-  <div class="acc-row" id="accRow" style="display:none">
-    <span>مستوى الدقة:</span>
-    <span class="acc-tag" id="accTag">—</span>
-    <span id="accM">—</span>
+  <!-- Step 2: Map + Address -->
+  <div id="phase2" class="hidden">
+
+    <!-- Tip -->
+    <div class="tip" id="tipBox">
+      <strong>📌 شوف موقعك على الخريطة وتأكد إنه صح</strong><br>
+      لو الشارع أو الحي مش صح — عدّله في الحقول تحت.
+      الإحداثيات دقيقة 100% حتى لو الاسم مش اتعرف.
+    </div>
+
+    <!-- Map -->
+    <div class="map-box" id="mapBox" style="margin-top:10px">
+      <div class="map-ph">
+        <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+          <circle cx="12" cy="9" r="2.5"/>
+        </svg>
+        <span>جاري تحميل الخريطة...</span>
+      </div>
+    </div>
+    <a id="gmapsLink" href="#" target="_blank" style="display:block;text-align:center;font-size:12px;color:var(--cyan);margin-top:6px;text-decoration:none">
+      🗺️ افتح في Google Maps للتأكد
+    </a>
+
+    <!-- Address Fields -->
+    <div class="card" style="margin-top:10px">
+      <div style="font-size:12px;color:var(--sub);margin-bottom:12px;line-height:1.6">
+        ✏️ <strong style="color:var(--text)">راجع البيانات وعدّل أي حقل مش صح</strong>
+      </div>
+      <div class="fgrid">
+
+        <div class="fblock" id="fb-gov">
+          <div class="flabel">🗺️ المحافظة <span class="fcheck">✓</span></div>
+          <div class="fval emp" id="dGov">جاري التحديد...</div>
+          <input class="finput" id="iGov" type="text" placeholder="اكتب المحافظة..." oninput="editField('gov')">
+        </div>
+
+        <div class="fblock" id="fb-city">
+          <div class="flabel">🏙️ المدينة / المركز <span class="fcheck">✓</span></div>
+          <div class="fval emp" id="dCity">جاري التحديد...</div>
+          <input class="finput" id="iCity" type="text" placeholder="اكتب المدينة..." oninput="editField('city')">
+        </div>
+
+        <div class="fblock" id="fb-village">
+          <div class="flabel">🏘️ الحي / المنطقة <span class="fcheck">✓</span></div>
+          <div class="fval emp" id="dVillage">جاري التحديد...</div>
+          <input class="finput" id="iVillage" type="text" placeholder="اكتب الحي أو المنطقة..." oninput="editField('village')">
+        </div>
+
+        <div class="fblock" id="fb-street">
+          <div class="flabel">🛣️ الشارع <span class="fcheck">✓</span></div>
+          <div class="fval emp" id="dStreet">جاري التحديد...</div>
+          <input class="finput" id="iStreet" type="text" placeholder="اكتب اسم الشارع..." oninput="editField('street')">
+        </div>
+
+        <div class="fblock full" id="fb-full">
+          <div class="flabel">📋 العنوان الكامل <span class="fcheck">✓</span></div>
+          <div class="fval emp" id="dFull">—</div>
+        </div>
+
+      </div>
+
+      <button class="btn success-btn" style="margin-top:14px" onclick="confirmLocation()">
+        ✅ تأكيد الموقع والمتابعة
+      </button>
+    </div>
   </div>
 
-  <!-- map -->
-  <div class="map-box" id="mapBox">
-    <div class="map-ph">
-      <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
-        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
-        <circle cx="12" cy="9" r="2.5"/>
+  <!-- Step 3: Confirmed -->
+  <div id="phase3" class="hidden">
+    <div class="confirm-bar">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+        <polyline points="22 4 12 14.01 9 11.01"/>
       </svg>
-      <span>الخريطة تظهر بعد التحديد</span>
+      <span>✅ تم تأكيد الموقع بنجاح — البيانات جاهزة للـ Backend</span>
     </div>
-  </div>
 
-  <!-- address fields -->
-  <div class="card">
-    <div class="fgrid">
-
-      <div class="fblock">
-        <div class="flabel">🗺️ المحافظة</div>
-        <div class="fval emp" id="dGov">لم يتحدد</div>
-        <input class="finput" id="iGov" type="text" placeholder="تعديل…" oninput="edit('gov')">
+    <!-- Final address display -->
+    <div class="card" style="margin-top:0">
+      <div class="fgrid">
+        <div class="fblock confirmed" id="fb-gov-final">
+          <div class="flabel">🗺️ المحافظة <span class="fcheck">✓</span></div>
+          <div class="fval" id="dGov2">—</div>
+        </div>
+        <div class="fblock confirmed" id="fb-city-final">
+          <div class="flabel">🏙️ المدينة <span class="fcheck">✓</span></div>
+          <div class="fval" id="dCity2">—</div>
+        </div>
+        <div class="fblock confirmed" id="fb-village-final">
+          <div class="flabel">🏘️ الحي / المنطقة <span class="fcheck">✓</span></div>
+          <div class="fval" id="dVillage2">—</div>
+        </div>
+        <div class="fblock confirmed" id="fb-street-final">
+          <div class="flabel">🛣️ الشارع <span class="fcheck">✓</span></div>
+          <div class="fval" id="dStreet2">—</div>
+        </div>
+        <div class="fblock full confirmed">
+          <div class="flabel">📋 العنوان الكامل <span class="fcheck">✓</span></div>
+          <div class="fval" id="dFull2">—</div>
+        </div>
       </div>
-
-      <div class="fblock">
-        <div class="flabel">🏙️ المدينة / المركز</div>
-        <div class="fval emp" id="dCity">لم يتحدد</div>
-        <input class="finput" id="iCity" type="text" placeholder="تعديل…" oninput="edit('city')">
-      </div>
-
-      <div class="fblock">
-        <div class="flabel">🏘️ الحي / المنطقة</div>
-        <div class="fval emp" id="dVillage">لم يتحدد</div>
-        <input class="finput" id="iVillage" type="text" placeholder="تعديل…" oninput="edit('village')">
-      </div>
-
-      <div class="fblock">
-        <div class="flabel">🛣️ الشارع</div>
-        <div class="fval emp" id="dStreet">لم يتحدد</div>
-        <input class="finput" id="iStreet" type="text" placeholder="تعديل…" oninput="edit('street')">
-      </div>
-
-      <div class="fblock full">
-        <div class="flabel">📋 العنوان الكامل</div>
-        <div class="fval emp" id="dFull">لم يتحدد</div>
-      </div>
-
+      <button class="btn secondary" style="margin-top:12px" onclick="resetAll()">
+        🔄 تغيير الموقع
+      </button>
     </div>
-  </div>
 
-  <!-- payload -->
-  <div class="card">
-    <div class="ph">
-      <span>📦 Payload — Backend</span>
-      <button class="cpybtn" id="cpyBtn" onclick="copyJSON()">نسخ JSON</button>
+    <!-- Payload -->
+    <div class="card" style="margin-top:0">
+      <div class="ph">
+        <span>📦 Payload — Backend</span>
+        <button class="cpybtn" id="cpyBtn" onclick="copyJSON()">نسخ JSON</button>
+      </div>
+      <div class="pjson" id="pjson">—</div>
     </div>
-    <div class="pjson" id="pjson">انتظار البيانات…</div>
-    <div class="src" id="srcTxt" style="margin-top:7px"></div>
   </div>
 
 </div>
@@ -253,147 +415,108 @@ const TOKEN = "pk.fab70d19cd0f26b0b2630069bd17c07c";
 
 const S = {
   lat: null, lon: null, acc: null,
-  gov: "", city: "", village: "", street: ""
+  gov: "", city: "", village: "", street: "",
+  confirmed: false,
+  readings: [], watchId: null
 };
 
-/* ── UI helpers ── */
 const $ = id => document.getElementById(id);
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
 
+/* ── Steps ── */
+function setStep(n) {
+  [1,2,3].forEach(i => {
+    const s = $("step" + i);
+    s.className = "step" + (i < n ? " done" : i === n ? " active" : "");
+  });
+  [1,2].forEach(i => {
+    const l = $("line" + i);
+    if (l) l.className = "step-line" + (i < n ? " done" : "");
+  });
+}
+
+/* ── Status ── */
 function setStatus(txt, cls) {
   $("st").className = "status " + cls;
   $("stTxt").textContent = txt;
 }
 
-function setBtn(on) {
+function setBtn(loading) {
   const b = $("detectBtn");
-  b.disabled = on;
-  b.className = "btn-detect" + (on ? " loading" : "");
-  $("btnTxt").textContent = on ? "جاري التحديد…" : "تحديد موقعي الآن";
+  b.disabled = loading;
+  b.className = "btn" + (loading ? " loading" : "");
+  $("btnTxt").textContent = loading ? "جاري التحديد..." : "تحديد موقعي بدقة عالية";
 }
 
-function setDisplay(field, val) {
-  const el = $("d" + cap(field));
-  if (val && val.trim()) {
-    el.textContent = val;
-    el.className = "fval";
-  } else {
-    el.textContent = "لم يتحدد";
-    el.className = "fval emp";
-  }
-}
-
-const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
-
-function setAll() {
-  ["gov","city","village","street"].forEach(f => setDisplay(f, S[f]));
-  const parts = [S.street, S.village, S.city, S.gov].filter(Boolean);
-  const full = parts.join("، ");
-  const el = $("dFull");
-  el.textContent = full || "لم يتحدد";
-  el.className = full ? "fval" : "fval emp";
-  renderJSON();
-}
-
-function edit(field) {
-  S[field] = $("i" + cap(field)).value.trim();
-  setAll();
+/* ── Accuracy ── */
+function showAccuracy(m) {
+  $("accRow").classList.remove("hidden");
+  const meters = Math.round(m);
+  $("accM").textContent = `± ${meters} متر`;
+  const tag = $("accTag");
+  if (meters <= 15)      { tag.className="acc-tag acc-hi"; tag.textContent="دقة عالية جداً ✨"; }
+  else if (meters <= 60) { tag.className="acc-tag acc-hi"; tag.textContent="دقة عالية"; }
+  else if (meters <= 200){ tag.className="acc-tag acc-md"; tag.textContent="دقة متوسطة"; }
+  else                   { tag.className="acc-tag acc-lo"; tag.textContent="دقة منخفضة"; }
 }
 
 /* ── Map ── */
 function showMap(lat, lon) {
-  const d = 0.003;
+  const d = 0.0025;
   $("mapBox").innerHTML =
-    `<iframe src="https://www.openstreetmap.org/export/embed.html?bbox=${lon-d},${lat-d},${lon+d},${lat+d}&layer=mapnik&marker=${lat},${lon}" allowfullscreen loading="lazy" title="map"></iframe>`;
+    `<iframe src="https://www.openstreetmap.org/export/embed.html?bbox=${lon-d},${lat-d},${lon+d},${lat+d}&layer=mapnik&marker=${lat},${lon}"
+     allowfullscreen loading="lazy" title="map"></iframe>`;
+  $("gmapsLink").href = `https://www.google.com/maps?q=${lat},${lon}`;
 }
 
-/* ── JSON render ── */
-function renderJSON() {
-  const obj = {
-    latitude:  S.lat,
-    longitude: S.lon,
-    accuracy_m: S.acc ? Math.round(S.acc) : null,
-    governorate: S.gov   || null,
-    city:        S.city  || null,
-    village:     S.village || null,
-    street:      S.street  || null,
-    formatted_address: [S.street, S.village, S.city, S.gov].filter(Boolean).join(", ") || null,
-    captured_at: new Date().toISOString()
-  };
-  $("pjson").innerHTML = JSON.stringify(obj, null, 2)
-    .replace(/"([^"]+)":/g, '<span class="k">"$1"</span>:')
-    .replace(/: "([^"]*)"/g, ': <span class="s">"$1"</span>')
-    .replace(/: (-?\d+\.?\d*)/g, ': <span class="n">$1</span>')
-    .replace(/: null/g, ': <span class="nl">null</span>');
+/* ── Field helpers ── */
+function setFieldVal(field, val) {
+  const el = $("d" + cap(field));
+  const fb = $("fb-" + field);
+  if (val && val.trim()) {
+    el.textContent = val;
+    el.className = "fval";
+    fb.classList.add("confirmed");
+  } else {
+    el.textContent = "لم يتعرف عليه — يرجى الكتابة يدوياً";
+    el.className = "fval emp";
+    fb.classList.remove("confirmed");
+  }
 }
 
-function copyJSON() {
-  const obj = {
-    latitude: S.lat, longitude: S.lon,
-    accuracy_m: S.acc ? Math.round(S.acc) : null,
-    governorate: S.gov || null, city: S.city || null,
-    village: S.village || null, street: S.street || null,
-    formatted_address: [S.street, S.village, S.city, S.gov].filter(Boolean).join(", ") || null,
-    captured_at: new Date().toISOString()
-  };
-  navigator.clipboard.writeText(JSON.stringify(obj, null, 2)).then(() => {
-    $("cpyBtn").textContent = "✅ تم النسخ";
-    $("cpyBtn").className = "cpybtn done";
-    setTimeout(() => { $("cpyBtn").textContent = "نسخ JSON"; $("cpyBtn").className = "cpybtn"; }, 2000);
-  });
+function editField(field) {
+  const val = $("i" + cap(field)).value.trim();
+  S[field] = val;
+  setFieldVal(field, val);
+  updateFullAddress();
 }
 
-/* ── Address parsing — LocationIQ priority for Egypt ──
-   zoom=18 returns the most granular level (street-level).
-   Field priority is tuned specifically for Egyptian + Arab addresses.
-──────────────────────────────────────────────────────── */
-function parseLocationIQ(addr, displayName) {
+function updateFullAddress() {
+  const parts = [S.street, S.village, S.city, S.gov].filter(Boolean);
+  const full = parts.join("، ");
+  const el = $("dFull");
+  el.textContent = full || "—";
+  el.className = full ? "fval" : "fval emp";
+  if (full) $("fb-full").classList.add("confirmed");
+}
 
-  /* GOVERNORATE
-     LocationIQ returns Egyptian governorates in addr.state ("محافظة القاهرة" etc.) */
+/* ── Address parse ── */
+function parseAddr(addr, displayName) {
   const gov =
-    addr.state ||
-    addr.state_district ||
-    addr.province ||
-    addr.region ||
-    "";
+    addr.state || addr.state_district || addr.province || addr.region || "";
 
-  /* CITY / CENTRE
-     In Egypt: addr.city = city, addr.city_district = district of city
-     addr.county = "مركز ..." which is the sub-governorate admin unit  */
   const city =
-    addr.city ||
-    addr.city_district ||
-    addr.town ||
-    addr.municipality ||
-    addr.county ||
-    addr.district ||
-    "";
+    addr.city || addr.city_district || addr.town ||
+    addr.municipality || addr.county || addr.district || "";
 
-  /* NEIGHBOURHOOD / HAY / VILLAGE
-     LocationIQ returns Egyptian neighbourhood in addr.suburb most reliably.
-     addr.neighbourhood is also used. We do NOT fall back to display_name here. */
   const village =
-    addr.suburb ||
-    addr.neighbourhood ||
-    addr.quarter ||
-    addr.village ||
-    addr.locality ||
-    addr.hamlet ||
-    addr.residential ||
-    addr.allotments ||
-    "";
+    addr.suburb || addr.neighbourhood || addr.quarter ||
+    addr.village || addr.locality || addr.hamlet ||
+    addr.residential || addr.allotments || "";
 
-  /* STREET
-     addr.road is the primary OSM key for named roads/streets.
-     display_name[0] is last-resort — only if truly no road field present. */
   let street =
-    addr.road ||
-    addr.street ||
-    addr.pedestrian ||
-    addr.path ||
-    addr.footway ||
-    addr.service ||
-    "";
+    addr.road || addr.street || addr.pedestrian ||
+    addr.path || addr.footway || addr.service || "";
 
   if (!street && displayName) {
     const seg = displayName.split(",")[0].trim();
@@ -403,95 +526,210 @@ function parseLocationIQ(addr, displayName) {
   return { gov, city, village, street };
 }
 
-/* ── Accuracy badge ── */
-function showAccuracy(meters) {
-  $("accRow").style.display = "flex";
-  const m = Math.round(meters);
-  $("accM").textContent = `± ${m} متر`;
-  const tag = $("accTag");
-  if (m <= 15)       { tag.className = "acc-tag acc-hi"; tag.textContent = "دقة عالية جداً"; }
-  else if (m <= 60)  { tag.className = "acc-tag acc-hi"; tag.textContent = "دقة عالية"; }
-  else if (m <= 200) { tag.className = "acc-tag acc-md"; tag.textContent = "دقة متوسطة"; }
-  else               { tag.className = "acc-tag acc-lo"; tag.textContent = "دقة منخفضة"; }
+/* ── Geocode ── */
+async function geocode(lat, lon) {
+  setStatus("⚡ جاري جلب بيانات الشارع من LocationIQ...", "work");
+  try {
+    const url =
+      `https://us1.locationiq.com/v1/reverse?key=${TOKEN}` +
+      `&lat=${lat}&lon=${lon}&format=json&accept-language=ar` +
+      `&zoom=18&addressdetails=1&normalizeaddress=1`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    return parseAddr(data.address || {}, data.display_name);
+  } catch(e) {
+    console.warn("LocationIQ error:", e.message);
+    return { gov: "", city: "", village: "", street: "" };
+  }
 }
 
-/* ── Main ── */
-function detect() {
+/* ── Watch GPS (take best of 5 readings) ── */
+function startGPS() {
   if (!navigator.geolocation) {
     setStatus("⛔ Geolocation غير مدعوم في هذا المتصفح", "err");
     return;
   }
   setBtn(true);
-  setStatus("⏳ جاري الوصول إلى GPS…", "work");
+  setStatus("⏳ جاري الوصول إلى GPS...", "work");
+  S.readings = [];
+  $("watchBar").classList.remove("hidden");
+  $("coordsRow").classList.remove("hidden");
+  updateWatchBar(0);
 
-  navigator.geolocation.getCurrentPosition(
-    async pos => {
-      S.lat = pos.coords.latitude;
-      S.lon = pos.coords.longitude;
-      S.acc = pos.coords.accuracy;
+  S.watchId = navigator.geolocation.watchPosition(
+    pos => {
+      S.readings.push({
+        lat: pos.coords.latitude,
+        lon: pos.coords.longitude,
+        acc: pos.coords.accuracy
+      });
 
-      /* Show coordinates immediately */
-      $("coordsRow").style.display = "flex";
-      $("cvLat").textContent = S.lat.toFixed(7);
-      $("cvLon").textContent = S.lon.toFixed(7);
-      $("cvAcc").textContent = Math.round(S.acc) + " م";
-      showAccuracy(S.acc);
-      showMap(S.lat, S.lon);
-      setStatus("⚡ جاري جلب بيانات العنوان من LocationIQ…", "work");
+      // Show current best reading
+      const best = S.readings.sort((a,b) => a.acc - b.acc)[0];
+      $("cvLat").textContent = best.lat.toFixed(7);
+      $("cvLon").textContent = best.lon.toFixed(7);
+      $("cvAcc").textContent = Math.round(best.acc) + " م";
+      showAccuracy(best.acc);
+      updateWatchBar(S.readings.length);
 
-      try {
-        /* LocationIQ reverse geocode — zoom=18 for street-level precision */
-        const url =
-          `https://us1.locationiq.com/v1/reverse` +
-          `?key=${TOKEN}` +
-          `&lat=${S.lat}&lon=${S.lon}` +
-          `&format=json` +
-          `&accept-language=ar` +
-          `&zoom=18` +
-          `&addressdetails=1` +
-          `&normalizeaddress=1`;
+      setStatus(`📡 تحسين الدقة... قراءة ${S.readings.length}/5`, "work");
 
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        if (data.error) throw new Error(data.error);
-
-        const addr = data.address || {};
-        const parsed = parseLocationIQ(addr, data.display_name);
-
-        S.gov     = parsed.gov;
-        S.city    = parsed.city;
-        S.village = parsed.village;
-        S.street  = parsed.street;
-
-        /* Pre-fill inputs */
-        $("iGov").value     = S.gov;
-        $("iCity").value    = S.city;
-        $("iVillage").value = S.village;
-        $("iStreet").value  = S.street;
-
-        setAll();
-        $("srcTxt").textContent = "display_name: " + (data.display_name || "—");
-        setStatus("✅ تم تحديد الموقع — يمكنك تعديل أي حقل", "ok");
-
-      } catch (err) {
-        console.error(err);
-        setStatus("⚠️ خطأ في جلب العنوان: " + err.message, "err");
-        renderJSON();
+      // After 5 readings or accuracy good enough, finalize
+      if (S.readings.length >= 5 || best.acc <= 10) {
+        navigator.geolocation.clearWatch(S.watchId);
+        finalizeGPS(best);
       }
-
-      setBtn(false);
     },
     err => {
-      const m = { 1: "⛔ تم رفض إذن الموقع — افتح إعدادات المتصفح", 2: "⚠️ تعذر الوصول للـ GPS", 3: "⏱️ انتهت مهلة الطلب" };
-      setStatus(m[err.code] || "خطأ غير معروف", "err");
+      navigator.geolocation.clearWatch(S.watchId);
+      const msgs = {
+        1: "⛔ تم رفض إذن الموقع — افتح إعدادات المتصفح",
+        2: "⚠️ تعذر الوصول للـ GPS — تأكد من تفعيله",
+        3: "⏱️ انتهت مهلة الطلب — حاول مجدداً"
+      };
+      setStatus(msgs[err.code] || "خطأ غير معروف", "err");
       setBtn(false);
+      $("watchBar").classList.add("hidden");
     },
     { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
   );
 }
 
-window.addEventListener("load", () => { renderJSON(); setTimeout(detect, 500); });
+function updateWatchBar(count) {
+  $("watchCount").textContent = `${count}/5 قراءات`;
+  $("watchFill").style.width = (count / 5 * 100) + "%";
+}
+
+async function finalizeGPS(best) {
+  S.lat = best.lat;
+  S.lon = best.lon;
+  S.acc = best.acc;
+
+  updateWatchBar(5);
+  setStatus("✅ تم تحديد الموقع بدقة — جاري جلب العنوان...", "ok");
+
+  // Show map immediately
+  showMap(S.lat, S.lon);
+
+  // Get address
+  const addr = await geocode(S.lat, S.lon);
+  S.gov     = addr.gov;
+  S.city    = addr.city;
+  S.village = addr.village;
+  S.street  = addr.street;
+
+  // Fill fields
+  setFieldVal("gov",     S.gov);
+  setFieldVal("city",    S.city);
+  setFieldVal("village", S.village);
+  setFieldVal("street",  S.street);
+  $("iGov").value     = S.gov;
+  $("iCity").value    = S.city;
+  $("iVillage").value = S.village;
+  $("iStreet").value  = S.street;
+  updateFullAddress();
+
+  // Warn if street not found
+  if (!S.street || !S.village) {
+    setStatus("⚠️ بعض البيانات لم تتعرف عليها — يرجى تعديلها يدوياً أدناه", "warn");
+  } else {
+    setStatus("✅ تم جلب العنوان — راجعه وأكده أدناه", "ok");
+  }
+
+  // Show phase 2
+  $("phase2").classList.remove("hidden");
+  setStep(2);
+  setBtn(false);
+
+  // Scroll to map
+  setTimeout(() => $("phase2").scrollIntoView({ behavior: "smooth", block: "start" }), 200);
+}
+
+/* ── Confirm ── */
+function confirmLocation() {
+  // Make sure fields have values
+  S.gov     = $("iGov").value.trim()     || S.gov;
+  S.city    = $("iCity").value.trim()    || S.city;
+  S.village = $("iVillage").value.trim() || S.village;
+  S.street  = $("iStreet").value.trim()  || S.street;
+
+  if (!S.gov && !S.city && !S.village && !S.street) {
+    alert("يرجى كتابة بيانات الموقع أولاً قبل التأكيد");
+    return;
+  }
+
+  S.confirmed = true;
+
+  // Fill final display
+  const parts = [S.street, S.village, S.city, S.gov].filter(Boolean);
+  $("dGov2").textContent     = S.gov     || "—";
+  $("dCity2").textContent    = S.city    || "—";
+  $("dVillage2").textContent = S.village || "—";
+  $("dStreet2").textContent  = S.street  || "—";
+  $("dFull2").textContent    = parts.join("، ") || "—";
+
+  renderJSON();
+  $("phase3").classList.remove("hidden");
+  setStep(3);
+  setTimeout(() => $("phase3").scrollIntoView({ behavior: "smooth", block: "start" }), 200);
+}
+
+/* ── JSON ── */
+function renderJSON() {
+  const obj = {
+    latitude:          S.lat,
+    longitude:         S.lon,
+    accuracy_m:        S.acc ? Math.round(S.acc) : null,
+    governorate:       S.gov     || null,
+    city:              S.city    || null,
+    village:           S.village || null,
+    street:            S.street  || null,
+    formatted_address: [S.street, S.village, S.city, S.gov].filter(Boolean).join(", ") || null,
+    confirmed_by_user: true,
+    captured_at:       new Date().toISOString()
+  };
+  $("pjson").innerHTML = JSON.stringify(obj, null, 2)
+    .replace(/"([^"]+)":/g, '<span class="k">"$1"</span>:')
+    .replace(/: "([^"]*)"/g, ': <span class="sv">"$1"</span>')
+    .replace(/: (-?\d+\.?\d*)/g, ': <span class="nv">$1</span>')
+    .replace(/: null/g, ': <span class="nl">null</span>')
+    .replace(/: true/g, ': <span class="sv">true</span>');
+}
+
+function copyJSON() {
+  const obj = {
+    latitude: S.lat, longitude: S.lon,
+    accuracy_m: S.acc ? Math.round(S.acc) : null,
+    governorate: S.gov || null, city: S.city || null,
+    village: S.village || null, street: S.street || null,
+    formatted_address: [S.street, S.village, S.city, S.gov].filter(Boolean).join(", ") || null,
+    confirmed_by_user: true,
+    captured_at: new Date().toISOString()
+  };
+  navigator.clipboard.writeText(JSON.stringify(obj, null, 2)).then(() => {
+    $("cpyBtn").textContent = "✅ تم النسخ";
+    $("cpyBtn").className = "cpybtn done";
+    setTimeout(() => { $("cpyBtn").textContent = "نسخ JSON"; $("cpyBtn").className = "cpybtn"; }, 2000);
+  });
+}
+
+/* ── Reset ── */
+function resetAll() {
+  if (S.watchId) navigator.geolocation.clearWatch(S.watchId);
+  Object.assign(S, { lat:null,lon:null,acc:null,gov:"",city:"",village:"",street:"",confirmed:false,readings:[],watchId:null });
+  $("phase2").classList.add("hidden");
+  $("phase3").classList.add("hidden");
+  $("watchBar").classList.add("hidden");
+  $("coordsRow").classList.add("hidden");
+  $("accRow").classList.add("hidden");
+  $("mapBox").innerHTML = `<div class="map-ph"><svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg><span>الخريطة تظهر بعد التحديد</span></div>`;
+  setStep(1);
+  setBtn(false);
+  setStatus("اضغط الزر لتفعيل GPS", "idle");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
 </script>
 </body>
 </html>
