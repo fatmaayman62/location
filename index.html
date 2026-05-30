@@ -3,24 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MedLink - محدد الموقع الدقيق</title>
+<title>محدد الموقع الدقيق</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #0b0f1a;
-  --surface: #111827;
-  --surface2: #1a2235;
-  --border: #1e2d45;
-  --accent: #3b82f6;
-  --accent2: #06b6d4;
-  --success: #10b981;
-  --warning: #f59e0b;
-  --danger: #ef4444;
-  --text: #f1f5f9;
-  --muted: #64748b;
-  --subtle: #94a3b8;
+  --bg: #080d18;
+  --s1: #0f1724;
+  --s2: #162032;
+  --border: #1c2d45;
+  --blue: #3b82f6;
+  --cyan: #06b6d4;
+  --green: #10b981;
+  --amber: #f59e0b;
+  --red: #ef4444;
+  --text: #e2e8f0;
+  --muted: #4b6080;
+  --sub: #7a95b4;
 }
-
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
@@ -29,577 +28,350 @@ body {
   min-height: 100vh;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
-  padding: 30px 16px 60px;
+  padding: 28px 16px 60px;
   color: var(--text);
   background-image:
-    radial-gradient(ellipse 80% 40% at 50% -10%, rgba(59,130,246,0.12) 0%, transparent 60%),
-    radial-gradient(ellipse 40% 30% at 90% 80%, rgba(6,182,212,0.08) 0%, transparent 50%);
+    radial-gradient(ellipse 70% 35% at 50% 0%, rgba(59,130,246,.13) 0%, transparent 60%),
+    radial-gradient(ellipse 35% 25% at 85% 75%, rgba(6,182,212,.08) 0%, transparent 50%);
 }
 
-.wrap {
-  width: 100%;
-  max-width: 560px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
+.wrap { width: 100%; max-width: 540px; display: flex; flex-direction: column; gap: 14px; }
 
-/* ── Header ── */
-.header {
-  text-align: center;
-  padding: 10px 0 4px;
-}
-.header h1 {
-  font-size: 26px;
-  font-weight: 900;
-  letter-spacing: -0.5px;
-  background: linear-gradient(135deg, #60a5fa, #06b6d4);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-.header p {
-  color: var(--subtle);
-  font-size: 13px;
-  margin-top: 4px;
-}
+/* header */
+.hd { text-align: center; padding: 6px 0; }
+.hd h1 { font-size: 24px; font-weight: 900;
+  background: linear-gradient(120deg,#60a5fa,#06b6d4);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.hd p { font-size: 12.5px; color: var(--sub); margin-top: 3px; }
 
-/* ── Card ── */
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 20px;
-}
+/* card */
+.card { background: var(--s1); border: 1px solid var(--border); border-radius: 14px; padding: 18px; }
 
-/* ── Detect Button ── */
-.detect-btn {
-  width: 100%;
-  padding: 14px 20px;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  border: none;
-  border-radius: 12px;
-  color: white;
-  font-family: 'Cairo', sans-serif;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  transition: opacity .2s, transform .15s;
-  position: relative;
-  overflow: hidden;
+/* button */
+.btn-detect {
+  width: 100%; padding: 13px;
+  background: linear-gradient(135deg, #2563eb, #0891b2);
+  border: none; border-radius: 12px;
+  color: #fff; font-family: 'Cairo', sans-serif;
+  font-size: 15px; font-weight: 700; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  transition: opacity .2s, transform .1s;
 }
-.detect-btn:hover { opacity: .9; }
-.detect-btn:active { transform: scale(.98); }
-.detect-btn:disabled { opacity: .5; cursor: not-allowed; }
-.detect-btn .pulse {
-  width: 10px; height: 10px;
-  border-radius: 50%;
-  background: white;
-  animation: pulse 1.2s ease-in-out infinite;
-  display: none;
-}
-.detect-btn.loading .pulse { display: block; }
-.detect-btn.loading .btn-icon { display: none; }
-@keyframes pulse {
-  0%,100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.5); opacity: .5; }
-}
+.btn-detect:hover { opacity: .88; }
+.btn-detect:active { transform: scale(.98); }
+.btn-detect:disabled { opacity: .45; cursor: not-allowed; }
 
-/* ── Status bar ── */
-.status-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 600;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  transition: all .3s;
-  min-height: 40px;
-}
-.status-bar.idle   { color: var(--muted); }
-.status-bar.loading { color: var(--accent2); border-color: rgba(6,182,212,.3); }
-.status-bar.success { color: var(--success); border-color: rgba(16,185,129,.3); background: rgba(16,185,129,.07); }
-.status-bar.error   { color: var(--danger);  border-color: rgba(239,68,68,.3);  background: rgba(239,68,68,.07); }
-.status-dot {
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  background: currentColor;
-}
-.status-bar.loading .status-dot { animation: pulse 1s infinite; }
+.dot-pulse { width: 9px; height: 9px; border-radius: 50%; background: #fff; display: none; }
+.btn-detect.loading .dot-pulse { display: block; animation: dp 1s ease-in-out infinite; }
+.btn-detect.loading .ico { display: none; }
+@keyframes dp { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.6);opacity:.4} }
 
-/* ── Accuracy badge ── */
-.accuracy-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  color: var(--muted);
-  padding: 0 2px;
+/* status */
+.status {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 13px; border-radius: 10px;
+  font-size: 13px; font-weight: 600;
+  border: 1px solid var(--border); background: var(--s1);
+  transition: all .3s; min-height: 38px;
 }
-.acc-badge {
-  padding: 2px 10px;
-  border-radius: 20px;
-  font-weight: 700;
-  font-size: 11px;
-  background: rgba(16,185,129,.15);
-  color: var(--success);
-  border: 1px solid rgba(16,185,129,.25);
-}
-.acc-badge.med { background: rgba(245,158,11,.12); color: var(--warning); border-color: rgba(245,158,11,.25); }
-.acc-badge.low { background: rgba(239,68,68,.12); color: var(--danger); border-color: rgba(239,68,68,.25); }
+.sd { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+.status.idle   { color: var(--muted); }
+.status.work   { color: var(--cyan);  border-color: rgba(6,182,212,.3); }
+.status.work .sd { animation: dp 1s infinite; }
+.status.ok     { color: var(--green); border-color: rgba(16,185,129,.3); background: rgba(16,185,129,.06); }
+.status.err    { color: var(--red);   border-color: rgba(239,68,68,.3);  background: rgba(239,68,68,.06); }
 
-/* ── Address grid ── */
-.addr-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-.addr-grid .full { grid-column: 1 / -1; }
+/* coords strip */
+.coords { display: flex; gap: 10px; }
+.cp { flex: 1; background: var(--s2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+.cp .cl { font-size: 10.5px; font-weight: 700; color: var(--muted); margin-bottom: 3px; text-transform: uppercase; letter-spacing: .4px; }
+.cp .cv { font-size: 12.5px; font-weight: 700; color: var(--cyan); font-family: monospace; }
 
-.field-block {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 12px 14px;
+/* accuracy */
+.acc-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--sub); }
+.acc-tag { padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+.acc-hi  { background: rgba(16,185,129,.12); color: var(--green); border: 1px solid rgba(16,185,129,.25); }
+.acc-md  { background: rgba(245,158,11,.12); color: var(--amber); border: 1px solid rgba(245,158,11,.25); }
+.acc-lo  { background: rgba(239,68,68,.12);  color: var(--red);   border: 1px solid rgba(239,68,68,.25); }
+
+/* map */
+.map-box {
+  border-radius: 12px; overflow: hidden; border: 1px solid var(--border);
+  height: 190px; background: var(--s2);
+  display: flex; align-items: center; justify-content: center;
+}
+.map-box iframe { width: 100%; height: 100%; border: none; display: block; }
+.map-ph { color: var(--muted); font-size: 13px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 7px; }
+.map-ph svg { opacity: .25; }
+
+/* fields grid */
+.fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+.fgrid .full { grid-column: 1/-1; }
+
+.fblock {
+  background: var(--s2); border: 1px solid var(--border);
+  border-radius: 11px; padding: 11px 13px;
   transition: border-color .2s;
 }
-.field-block:focus-within { border-color: rgba(59,130,246,.5); }
+.fblock:focus-within { border-color: rgba(59,130,246,.45); }
 
-.field-label {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: .5px;
-  margin-bottom: 6px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
+.flabel {
+  font-size: 10.5px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .4px;
+  margin-bottom: 5px; display: flex; align-items: center; gap: 4px;
 }
-.field-label .licon { font-size: 13px; }
+.fval { font-size: 13.5px; font-weight: 700; color: var(--text); min-height: 19px; margin-bottom: 7px; line-height: 1.4; }
+.fval.emp { color: var(--muted); font-weight: 400; font-style: italic; font-size: 12.5px; }
 
-.field-value {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text);
-  min-height: 20px;
-  margin-bottom: 8px;
-  line-height: 1.4;
+.finput {
+  width: 100%; background: var(--bg);
+  border: 1px solid var(--border); border-radius: 7px;
+  padding: 6px 9px; color: var(--text);
+  font-family: 'Cairo', sans-serif; font-size: 12.5px;
+  outline: none; transition: border-color .2s;
 }
-.field-value.empty { color: var(--muted); font-weight: 400; font-style: italic; }
+.finput:focus { border-color: var(--blue); }
+.finput::placeholder { color: var(--muted); }
 
-.field-input {
-  width: 100%;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 7px 10px;
-  color: var(--text);
-  font-family: 'Cairo', sans-serif;
-  font-size: 13px;
-  outline: none;
-  transition: border-color .2s;
+/* payload */
+.ph { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.ph span { font-size: 11.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
+.cpybtn {
+  padding: 4px 11px; background: var(--s2);
+  border: 1px solid var(--border); border-radius: 6px;
+  color: var(--sub); font-size: 11.5px; font-family: 'Cairo', sans-serif;
+  cursor: pointer; transition: all .2s;
 }
-.field-input:focus { border-color: var(--accent); }
-.field-input::placeholder { color: var(--muted); }
+.cpybtn:hover { border-color: var(--blue); color: var(--blue); }
+.cpybtn.done  { color: var(--green); border-color: var(--green); }
 
-/* ── Coordinates strip ── */
-.coord-strip {
-  display: flex;
-  gap: 10px;
+.pjson {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 9px; padding: 13px; font-family: 'Courier New', monospace;
+  font-size: 11.5px; line-height: 1.75; overflow-x: auto; white-space: pre;
 }
-.coord-pill {
-  flex: 1;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 14px;
-  font-size: 12px;
-}
-.coord-pill .clabel { color: var(--muted); font-size: 11px; font-weight: 700; margin-bottom: 3px; }
-.coord-pill .cval { color: var(--accent2); font-weight: 700; font-family: monospace; font-size: 13px; }
+.k { color: #7dd3fc; } .s { color: #86efac; } .n { color: #fbbf24; } .nl { color: #f87171; }
 
-/* ── Map preview ── */
-.map-wrap {
-  position: relative;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  height: 200px;
-  background: var(--surface2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.map-wrap iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
-  display: block;
-}
-.map-placeholder {
-  color: var(--muted);
-  font-size: 13px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-.map-placeholder svg { opacity: .3; }
-
-/* ── Payload ── */
-.payload-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-.payload-header span { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
-.copy-btn {
-  padding: 4px 12px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--subtle);
-  font-size: 12px;
-  font-family: 'Cairo', sans-serif;
-  cursor: pointer;
-  transition: all .2s;
-}
-.copy-btn:hover { border-color: var(--accent); color: var(--accent); }
-.copy-btn.copied { color: var(--success); border-color: var(--success); }
-
-.payload-pre {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 14px;
-  font-family: 'Courier New', monospace;
-  font-size: 12px;
-  line-height: 1.7;
-  color: #a5b4fc;
-  overflow-x: auto;
-  white-space: pre;
-}
-.payload-pre .key   { color: #7dd3fc; }
-.payload-pre .str   { color: #86efac; }
-.payload-pre .num   { color: #fbbf24; }
-.payload-pre .null_ { color: #f87171; }
-
-/* ── Source badge ── */
-.source-row {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.src-badge {
-  padding: 3px 10px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 700;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  color: var(--subtle);
-}
-.src-badge.active { background: rgba(59,130,246,.1); color: #93c5fd; border-color: rgba(59,130,246,.3); }
+/* source */
+.src { font-size: 11px; color: var(--muted); text-align: left; direction: ltr; }
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <div class="header">
+  <div class="hd">
     <h1>📍 محدد الموقع الدقيق</h1>
-    <p>يستخدم GPS عالي الدقة مع تحديد ديناميكي للشارع والمنطقة والمدينة والمحافظة</p>
+    <p>تحديد الشارع · الحي · المدينة · المحافظة بدقة عالية عبر LocationIQ</p>
   </div>
 
-  <!-- Detect Button -->
-  <button class="detect-btn" id="detectBtn" onclick="startDetection()">
-    <span class="btn-icon">🎯</span>
-    <span class="pulse"></span>
-    <span id="btnText">تحديد موقعي الآن</span>
+  <button class="btn-detect" id="detectBtn" onclick="detect()">
+    <span class="ico">🎯</span>
+    <span class="dot-pulse"></span>
+    <span id="btnTxt">تحديد موقعي الآن</span>
   </button>
 
-  <!-- Status -->
-  <div class="status-bar idle" id="statusBar">
-    <div class="status-dot"></div>
-    <span id="statusText">في انتظار تفعيل GPS...</span>
+  <div class="status idle" id="st">
+    <div class="sd"></div>
+    <span id="stTxt">في انتظار تفعيل GPS…</span>
   </div>
 
-  <!-- Accuracy -->
-  <div class="accuracy-row" id="accRow" style="display:none">
-    <span>دقة GPS:</span>
-    <span class="acc-badge" id="accBadge">—</span>
-    <span id="accText">—</span>
-    <span style="margin-right:auto; color:var(--subtle)" id="sourceRow"></span>
+  <!-- coords -->
+  <div class="coords" id="coordsRow" style="display:none">
+    <div class="cp"><div class="cl">خط العرض</div><div class="cv" id="cvLat">—</div></div>
+    <div class="cp"><div class="cl">خط الطول</div><div class="cv" id="cvLon">—</div></div>
+    <div class="cp"><div class="cl">دقة GPS</div><div class="cv" id="cvAcc">—</div></div>
   </div>
 
-  <!-- Coordinates -->
-  <div class="coord-strip" id="coordStrip" style="display:none">
-    <div class="coord-pill">
-      <div class="clabel">خط العرض (Lat)</div>
-      <div class="cval" id="latVal">—</div>
-    </div>
-    <div class="coord-pill">
-      <div class="clabel">خط الطول (Lon)</div>
-      <div class="cval" id="lonVal">—</div>
-    </div>
-    <div class="coord-pill">
-      <div class="clabel">الارتفاع (Alt)</div>
-      <div class="cval" id="altVal">—</div>
-    </div>
+  <!-- accuracy badge -->
+  <div class="acc-row" id="accRow" style="display:none">
+    <span>مستوى الدقة:</span>
+    <span class="acc-tag" id="accTag">—</span>
+    <span id="accM">—</span>
   </div>
 
-  <!-- Map Preview -->
-  <div class="map-wrap" id="mapWrap">
-    <div class="map-placeholder">
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+  <!-- map -->
+  <div class="map-box" id="mapBox">
+    <div class="map-ph">
+      <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
         <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
         <circle cx="12" cy="9" r="2.5"/>
       </svg>
-      <span>الخريطة ستظهر هنا بعد التحديد</span>
+      <span>الخريطة تظهر بعد التحديد</span>
     </div>
   </div>
 
-  <!-- Address Fields -->
+  <!-- address fields -->
   <div class="card">
-    <div class="addr-grid">
+    <div class="fgrid">
 
-      <div class="field-block">
-        <div class="field-label"><span class="licon">🗺️</span> المحافظة</div>
-        <div class="field-value empty" id="govDisplay">لم يتم التحديد</div>
-        <input class="field-input" id="govInput" type="text" placeholder="تعديل المحافظة..." oninput="syncField('gov')">
+      <div class="fblock">
+        <div class="flabel">🗺️ المحافظة</div>
+        <div class="fval emp" id="dGov">لم يتحدد</div>
+        <input class="finput" id="iGov" type="text" placeholder="تعديل…" oninput="edit('gov')">
       </div>
 
-      <div class="field-block">
-        <div class="field-label"><span class="licon">🏙️</span> المدينة / المركز</div>
-        <div class="field-value empty" id="cityDisplay">لم يتم التحديد</div>
-        <input class="field-input" id="cityInput" type="text" placeholder="تعديل المدينة..." oninput="syncField('city')">
+      <div class="fblock">
+        <div class="flabel">🏙️ المدينة / المركز</div>
+        <div class="fval emp" id="dCity">لم يتحدد</div>
+        <input class="finput" id="iCity" type="text" placeholder="تعديل…" oninput="edit('city')">
       </div>
 
-      <div class="field-block">
-        <div class="field-label"><span class="licon">🏘️</span> المنطقة / الحي</div>
-        <div class="field-value empty" id="villageDisplay">لم يتم التحديد</div>
-        <input class="field-input" id="villageInput" type="text" placeholder="تعديل المنطقة..." oninput="syncField('village')">
+      <div class="fblock">
+        <div class="flabel">🏘️ الحي / المنطقة</div>
+        <div class="fval emp" id="dVillage">لم يتحدد</div>
+        <input class="finput" id="iVillage" type="text" placeholder="تعديل…" oninput="edit('village')">
       </div>
 
-      <div class="field-block">
-        <div class="field-label"><span class="licon">🛣️</span> الشارع</div>
-        <div class="field-value empty" id="streetDisplay">لم يتم التحديد</div>
-        <input class="field-input" id="streetInput" type="text" placeholder="تعديل الشارع..." oninput="syncField('street')">
+      <div class="fblock">
+        <div class="flabel">🛣️ الشارع</div>
+        <div class="fval emp" id="dStreet">لم يتحدد</div>
+        <input class="finput" id="iStreet" type="text" placeholder="تعديل…" oninput="edit('street')">
       </div>
 
-      <div class="field-block full">
-        <div class="field-label"><span class="licon">📋</span> العنوان الكامل</div>
-        <div class="field-value empty" id="fullAddrDisplay">لم يتم التحديد</div>
+      <div class="fblock full">
+        <div class="flabel">📋 العنوان الكامل</div>
+        <div class="fval emp" id="dFull">لم يتحدد</div>
       </div>
 
     </div>
   </div>
 
-  <!-- Payload -->
+  <!-- payload -->
   <div class="card">
-    <div class="payload-header">
-      <span>📦 Payload للـ Backend</span>
-      <button class="copy-btn" id="copyBtn" onclick="copyPayload()">نسخ JSON</button>
+    <div class="ph">
+      <span>📦 Payload — Backend</span>
+      <button class="cpybtn" id="cpyBtn" onclick="copyJSON()">نسخ JSON</button>
     </div>
-    <div class="payload-pre" id="payloadPre">انتظار البيانات...</div>
+    <div class="pjson" id="pjson">انتظار البيانات…</div>
+    <div class="src" id="srcTxt" style="margin-top:7px"></div>
   </div>
 
 </div>
 
 <script>
-/* ─────────────────────────────────────────────
-   STATE
-───────────────────────────────────────────── */
-const state = {
-  lat: null, lon: null, alt: null, accuracy: null,
-  gov: "", city: "", village: "", street: "",
-  rawDisplayName: "",
-  apiSource: "",
-  timestamp: null
+const TOKEN = "pk.fab70d19cd0f26b0b2630069bd17c07c";
+
+const S = {
+  lat: null, lon: null, acc: null,
+  gov: "", city: "", village: "", street: ""
 };
 
-/* ─────────────────────────────────────────────
-   UI HELPERS
-───────────────────────────────────────────── */
-function setStatus(text, type = "idle") {
-  const bar = document.getElementById("statusBar");
-  bar.className = "status-bar " + type;
-  document.getElementById("statusText").textContent = text;
+/* ── UI helpers ── */
+const $ = id => document.getElementById(id);
+
+function setStatus(txt, cls) {
+  $("st").className = "status " + cls;
+  $("stTxt").textContent = txt;
 }
 
-function setBtn(loading) {
-  const btn = document.getElementById("detectBtn");
-  btn.disabled = loading;
-  btn.className = "detect-btn" + (loading ? " loading" : "");
-  document.getElementById("btnText").textContent = loading ? "جاري التحديد..." : "تحديد موقعي الآن";
+function setBtn(on) {
+  const b = $("detectBtn");
+  b.disabled = on;
+  b.className = "btn-detect" + (on ? " loading" : "");
+  $("btnTxt").textContent = on ? "جاري التحديد…" : "تحديد موقعي الآن";
 }
 
-function showAccuracy(meters) {
-  const row = document.getElementById("accRow");
-  row.style.display = "flex";
-  const badge = document.getElementById("accBadge");
-  const text  = document.getElementById("accText");
-  const m = Math.round(meters);
-  text.textContent = `± ${m} متر`;
-  if (m <= 20) {
-    badge.className = "acc-badge";
-    badge.textContent = "عالية جداً";
-  } else if (m <= 100) {
-    badge.className = "acc-badge";
-    badge.textContent = "عالية";
-  } else if (m <= 500) {
-    badge.className = "acc-badge med";
-    badge.textContent = "متوسطة";
+function setDisplay(field, val) {
+  const el = $("d" + cap(field));
+  if (val && val.trim()) {
+    el.textContent = val;
+    el.className = "fval";
   } else {
-    badge.className = "acc-badge low";
-    badge.textContent = "منخفضة";
+    el.textContent = "لم يتحدد";
+    el.className = "fval emp";
   }
 }
 
-function updateDisplay(field, value) {
-  const el = document.getElementById(field + "Display");
-  if (value && value.trim()) {
-    el.textContent = value;
-    el.className = "field-value";
-  } else {
-    el.textContent = "لم يتم التحديد";
-    el.className = "field-value empty";
-  }
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+function setAll() {
+  ["gov","city","village","street"].forEach(f => setDisplay(f, S[f]));
+  const parts = [S.street, S.village, S.city, S.gov].filter(Boolean);
+  const full = parts.join("، ");
+  const el = $("dFull");
+  el.textContent = full || "لم يتحدد";
+  el.className = full ? "fval" : "fval emp";
+  renderJSON();
 }
 
-function setInput(field, value) {
-  document.getElementById(field + "Input").value = value || "";
+function edit(field) {
+  S[field] = $("i" + cap(field)).value.trim();
+  setAll();
 }
 
-/* called when user edits any input */
-function syncField(field) {
-  const val = document.getElementById(field + "Input").value.trim();
-  state[field] = val;
-  updateDisplay(field, val);
-  rebuildFullAddress();
-  renderPayload();
-}
-
-function rebuildFullAddress() {
-  const parts = [state.street, state.village, state.city, state.gov]
-    .filter(p => p && p.trim() !== "");
-  const full = parts.join("، ") || "";
-  const el = document.getElementById("fullAddrDisplay");
-  if (full) {
-    el.textContent = full;
-    el.className = "field-value";
-  } else {
-    el.textContent = "لم يتم التحديد";
-    el.className = "field-value empty";
-  }
-}
-
-/* ─────────────────────────────────────────────
-   MAP
-───────────────────────────────────────────── */
+/* ── Map ── */
 function showMap(lat, lon) {
-  const wrap = document.getElementById("mapWrap");
-  const zoom = 17;
-  wrap.innerHTML = `<iframe
-    src="https://www.openstreetmap.org/export/embed.html?bbox=${lon-.003},${lat-.003},${lon+.003},${lat+.003}&layer=mapnik&marker=${lat},${lon}"
-    allowfullscreen loading="lazy" title="خريطة الموقع">
-  </iframe>`;
+  const d = 0.003;
+  $("mapBox").innerHTML =
+    `<iframe src="https://www.openstreetmap.org/export/embed.html?bbox=${lon-d},${lat-d},${lon+d},${lat+d}&layer=mapnik&marker=${lat},${lon}" allowfullscreen loading="lazy" title="map"></iframe>`;
 }
 
-/* ─────────────────────────────────────────────
-   PAYLOAD RENDER
-───────────────────────────────────────────── */
-function renderPayload() {
+/* ── JSON render ── */
+function renderJSON() {
   const obj = {
-    latitude:          state.lat,
-    longitude:         state.lon,
-    altitude_m:        state.alt,
-    accuracy_m:        state.accuracy ? Math.round(state.accuracy) : null,
-    governorate:       state.gov   || null,
-    city:              state.city  || null,
-    village:           state.village || null,
-    street:            state.street  || null,
-    formatted_address: [state.street, state.village, state.city, state.gov].filter(Boolean).join(", ") || null,
-    api_source:        state.apiSource || null,
-    captured_at:       state.timestamp
+    latitude:  S.lat,
+    longitude: S.lon,
+    accuracy_m: S.acc ? Math.round(S.acc) : null,
+    governorate: S.gov   || null,
+    city:        S.city  || null,
+    village:     S.village || null,
+    street:      S.street  || null,
+    formatted_address: [S.street, S.village, S.city, S.gov].filter(Boolean).join(", ") || null,
+    captured_at: new Date().toISOString()
   };
-
-  const lines = JSON.stringify(obj, null, 2)
-    .replace(/"([^"]+)":/g, '<span class="key">"$1"</span>:')
-    .replace(/: "([^"]*)"/g, ': <span class="str">"$1"</span>')
-    .replace(/: (-?\d+\.?\d*)/g, ': <span class="num">$1</span>')
-    .replace(/: null/g, ': <span class="null_">null</span>');
-
-  document.getElementById("payloadPre").innerHTML = lines;
+  $("pjson").innerHTML = JSON.stringify(obj, null, 2)
+    .replace(/"([^"]+)":/g, '<span class="k">"$1"</span>:')
+    .replace(/: "([^"]*)"/g, ': <span class="s">"$1"</span>')
+    .replace(/: (-?\d+\.?\d*)/g, ': <span class="n">$1</span>')
+    .replace(/: null/g, ': <span class="nl">null</span>');
 }
 
-function copyPayload() {
+function copyJSON() {
   const obj = {
-    latitude: state.lat, longitude: state.lon,
-    altitude_m: state.alt,
-    accuracy_m: state.accuracy ? Math.round(state.accuracy) : null,
-    governorate: state.gov || null,
-    city: state.city || null,
-    village: state.village || null,
-    street: state.street || null,
-    formatted_address: [state.street, state.village, state.city, state.gov].filter(Boolean).join(", ") || null,
-    api_source: state.apiSource || null,
-    captured_at: state.timestamp
+    latitude: S.lat, longitude: S.lon,
+    accuracy_m: S.acc ? Math.round(S.acc) : null,
+    governorate: S.gov || null, city: S.city || null,
+    village: S.village || null, street: S.street || null,
+    formatted_address: [S.street, S.village, S.city, S.gov].filter(Boolean).join(", ") || null,
+    captured_at: new Date().toISOString()
   };
   navigator.clipboard.writeText(JSON.stringify(obj, null, 2)).then(() => {
-    const btn = document.getElementById("copyBtn");
-    btn.textContent = "✅ تم النسخ";
-    btn.className = "copy-btn copied";
-    setTimeout(() => {
-      btn.textContent = "نسخ JSON";
-      btn.className = "copy-btn";
-    }, 2000);
+    $("cpyBtn").textContent = "✅ تم النسخ";
+    $("cpyBtn").className = "cpybtn done";
+    setTimeout(() => { $("cpyBtn").textContent = "نسخ JSON"; $("cpyBtn").className = "cpybtn"; }, 2000);
   });
 }
 
-/* ─────────────────────────────────────────────
-   ADDRESS PARSING  (Nominatim / LocationIQ)
-   Priority tuned for Egypt + Arab countries
-───────────────────────────────────────────── */
-function parseAddress(addr, displayName) {
+/* ── Address parsing — LocationIQ priority for Egypt ──
+   zoom=18 returns the most granular level (street-level).
+   Field priority is tuned specifically for Egyptian + Arab addresses.
+──────────────────────────────────────────────────────── */
+function parseLocationIQ(addr, displayName) {
 
   /* GOVERNORATE
-     Egypt: state = "محافظة ..."
-     Fallback chain for other Arab countries */
+     LocationIQ returns Egyptian governorates in addr.state ("محافظة القاهرة" etc.) */
   const gov =
     addr.state ||
     addr.state_district ||
     addr.province ||
     addr.region ||
-    addr.county ||
     "";
 
   /* CITY / CENTRE
-     Egypt: city, city_district, town
-     Note: county in Egypt can be "مركز ..." which IS a city-level unit */
+     In Egypt: addr.city = city, addr.city_district = district of city
+     addr.county = "مركز ..." which is the sub-governorate admin unit  */
   const city =
     addr.city ||
     addr.city_district ||
     addr.town ||
     addr.municipality ||
-    addr.district ||
     addr.county ||
+    addr.district ||
     "";
 
-  /* VILLAGE / NEIGHBOURHOOD / HAY
-     suburb = حي in Egypt, neighbourhood = neighbourhood
-     Do NOT fall back to display_name here */
+  /* NEIGHBOURHOOD / HAY / VILLAGE
+     LocationIQ returns Egyptian neighbourhood in addr.suburb most reliably.
+     addr.neighbourhood is also used. We do NOT fall back to display_name here. */
   const village =
     addr.suburb ||
     addr.neighbourhood ||
@@ -612,165 +384,114 @@ function parseAddress(addr, displayName) {
     "";
 
   /* STREET
-     road is the primary OSM tag for named streets.
-     display_name[0] is last resort only. */
+     addr.road is the primary OSM key for named roads/streets.
+     display_name[0] is last-resort — only if truly no road field present. */
   let street =
     addr.road ||
     addr.street ||
     addr.pedestrian ||
     addr.path ||
     addr.footway ||
-    addr.cycleway ||
     addr.service ||
     "";
 
   if (!street && displayName) {
-    const first = displayName.split(",")[0].trim();
-    /* only use if it looks like a street name (not a number / coord) */
-    if (first && !/^\d/.test(first)) {
-      street = first;
-    }
+    const seg = displayName.split(",")[0].trim();
+    if (seg && !/^\d/.test(seg) && seg.length < 80) street = seg;
   }
 
   return { gov, city, village, street };
 }
 
-/* ─────────────────────────────────────────────
-   GEOCODING — tries Nominatim first, then
-   falls back to LocationIQ (free tier key)
-───────────────────────────────────────────── */
-async function reverseGeocode(lat, lon) {
-
-  /* ── Try 1: OpenStreetMap Nominatim (no key needed) ── */
-  try {
-    setStatus("جاري جلب البيانات من OpenStreetMap...", "loading");
-    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=ar&zoom=18&addressdetails=1&extratags=1`;
-    const res = await fetch(url, { headers: { "Accept-Language": "ar", "User-Agent": "MedLink-LocationPicker/1.0" } });
-    if (!res.ok) throw new Error("Nominatim HTTP " + res.status);
-    const data = await res.json();
-    if (data.error) throw new Error(data.error);
-    state.apiSource = "OpenStreetMap Nominatim";
-    return parseAddress(data.address || {}, data.display_name);
-  } catch (e) {
-    console.warn("Nominatim failed:", e.message);
-  }
-
-  /* ── Try 2: LocationIQ (fallback) ── */
-  try {
-    setStatus("جاري المحاولة من LocationIQ...", "loading");
-    const LIQ_KEY = "pk.fab70d19cd0f26b0b2630069bd17c07c";
-    const url = `https://us1.locationiq.com/v1/reverse?key=${LIQ_KEY}&lat=${lat}&lon=${lon}&format=json&accept-language=ar&zoom=18&addressdetails=1`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("LocationIQ HTTP " + res.status);
-    const data = await res.json();
-    if (data.error) throw new Error(data.error);
-    state.apiSource = "LocationIQ";
-    return parseAddress(data.address || {}, data.display_name);
-  } catch (e) {
-    console.warn("LocationIQ failed:", e.message);
-  }
-
-  /* ── Try 3: BigDataCloud (no key, good for free use) ── */
-  try {
-    setStatus("جاري المحاولة من BigDataCloud...", "loading");
-    const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=ar`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("BigDataCloud HTTP " + res.status);
-    const data = await res.json();
-    state.apiSource = "BigDataCloud";
-    return {
-      gov:     data.principalSubdivision || data.countryName || "",
-      city:    data.city || data.locality || "",
-      village: data.localityInfo?.administrative?.[4]?.name || data.suburb || "",
-      street:  data.street || ""
-    };
-  } catch (e) {
-    console.warn("BigDataCloud failed:", e.message);
-  }
-
-  throw new Error("فشلت جميع خدمات الجيوكودينج");
+/* ── Accuracy badge ── */
+function showAccuracy(meters) {
+  $("accRow").style.display = "flex";
+  const m = Math.round(meters);
+  $("accM").textContent = `± ${m} متر`;
+  const tag = $("accTag");
+  if (m <= 15)       { tag.className = "acc-tag acc-hi"; tag.textContent = "دقة عالية جداً"; }
+  else if (m <= 60)  { tag.className = "acc-tag acc-hi"; tag.textContent = "دقة عالية"; }
+  else if (m <= 200) { tag.className = "acc-tag acc-md"; tag.textContent = "دقة متوسطة"; }
+  else               { tag.className = "acc-tag acc-lo"; tag.textContent = "دقة منخفضة"; }
 }
 
-/* ─────────────────────────────────────────────
-   MAIN FLOW
-───────────────────────────────────────────── */
-function startDetection() {
+/* ── Main ── */
+function detect() {
   if (!navigator.geolocation) {
-    setStatus("⛔ Geolocation غير مدعوم في هذا المتصفح", "error");
+    setStatus("⛔ Geolocation غير مدعوم في هذا المتصفح", "err");
     return;
   }
-
   setBtn(true);
-  setStatus("⏳ يتم الوصول إلى GPS... قد يستغرق ذلك ثوانٍ", "loading");
+  setStatus("⏳ جاري الوصول إلى GPS…", "work");
 
   navigator.geolocation.getCurrentPosition(
-    async (pos) => {
-      state.lat      = pos.coords.latitude;
-      state.lon      = pos.coords.longitude;
-      state.alt      = pos.coords.altitude ? +pos.coords.altitude.toFixed(1) : null;
-      state.accuracy = pos.coords.accuracy;
-      state.timestamp = new Date().toISOString();
+    async pos => {
+      S.lat = pos.coords.latitude;
+      S.lon = pos.coords.longitude;
+      S.acc = pos.coords.accuracy;
 
       /* Show coordinates immediately */
-      document.getElementById("coordStrip").style.display = "flex";
-      document.getElementById("latVal").textContent  = state.lat.toFixed(7);
-      document.getElementById("lonVal").textContent  = state.lon.toFixed(7);
-      document.getElementById("altVal").textContent  = state.alt != null ? state.alt + " م" : "—";
-      showAccuracy(state.accuracy);
-      showMap(state.lat, state.lon);
+      $("coordsRow").style.display = "flex";
+      $("cvLat").textContent = S.lat.toFixed(7);
+      $("cvLon").textContent = S.lon.toFixed(7);
+      $("cvAcc").textContent = Math.round(S.acc) + " م";
+      showAccuracy(S.acc);
+      showMap(S.lat, S.lon);
+      setStatus("⚡ جاري جلب بيانات العنوان من LocationIQ…", "work");
 
-      /* Geocode */
       try {
-        const addr = await reverseGeocode(state.lat, state.lon);
+        /* LocationIQ reverse geocode — zoom=18 for street-level precision */
+        const url =
+          `https://us1.locationiq.com/v1/reverse` +
+          `?key=${TOKEN}` +
+          `&lat=${S.lat}&lon=${S.lon}` +
+          `&format=json` +
+          `&accept-language=ar` +
+          `&zoom=18` +
+          `&addressdetails=1` +
+          `&normalizeaddress=1`;
 
-        state.gov     = addr.gov;
-        state.city    = addr.city;
-        state.village = addr.village;
-        state.street  = addr.street;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
 
-        /* Update spans */
-        updateDisplay("gov",     state.gov);
-        updateDisplay("city",    state.city);
-        updateDisplay("village", state.village);
-        updateDisplay("street",  state.street);
+        const addr = data.address || {};
+        const parsed = parseLocationIQ(addr, data.display_name);
+
+        S.gov     = parsed.gov;
+        S.city    = parsed.city;
+        S.village = parsed.village;
+        S.street  = parsed.street;
 
         /* Pre-fill inputs */
-        setInput("gov",     state.gov);
-        setInput("city",    state.city);
-        setInput("village", state.village);
-        setInput("street",  state.street);
+        $("iGov").value     = S.gov;
+        $("iCity").value    = S.city;
+        $("iVillage").value = S.village;
+        $("iStreet").value  = S.street;
 
-        rebuildFullAddress();
-        renderPayload();
-
-        document.getElementById("sourceRow").textContent = "المصدر: " + state.apiSource;
-        setStatus("✅ تم تحديد الموقع بنجاح — يمكنك تعديل أي حقل", "success");
+        setAll();
+        $("srcTxt").textContent = "display_name: " + (data.display_name || "—");
+        setStatus("✅ تم تحديد الموقع — يمكنك تعديل أي حقل", "ok");
 
       } catch (err) {
-        setStatus("⚠️ " + err.message, "error");
-        renderPayload();
+        console.error(err);
+        setStatus("⚠️ خطأ في جلب العنوان: " + err.message, "err");
+        renderJSON();
       }
 
       setBtn(false);
     },
-    (err) => {
-      const msgs = {
-        1: "⛔ تم رفض الإذن — يرجى السماح بالوصول إلى الموقع من إعدادات المتصفح",
-        2: "⚠️ تعذر تحديد الموقع — تحقق من تفعيل GPS",
-        3: "⏱️ انتهت مهلة الطلب — حاول مرة أخرى"
-      };
-      setStatus(msgs[err.code] || "خطأ غير معروف", "error");
+    err => {
+      const m = { 1: "⛔ تم رفض إذن الموقع — افتح إعدادات المتصفح", 2: "⚠️ تعذر الوصول للـ GPS", 3: "⏱️ انتهت مهلة الطلب" };
+      setStatus(m[err.code] || "خطأ غير معروف", "err");
       setBtn(false);
     },
     { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
   );
 }
 
-/* Auto-start */
-window.addEventListener("load", () => {
-  renderPayload();
-  setTimeout(startDetection, 600);
-});
+window.addEventListener("load", () => { renderJSON(); setTimeout(detect, 500); });
 </script>
 </body>
 </html>
