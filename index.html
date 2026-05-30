@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MedLink - Precise Auto Location</title>
+    <title>MedLink - Precise Auto Location (No Visa)</title>
     <style>
         body {
             font-family: sans-serif;
@@ -45,12 +45,12 @@
 <body>
 
 <div class="card">
-    <h3 style="margin-top: 0; color: #1e2937;">📡 تحديد الموقع الدقيق أوتوماتيك</h3>
-    <p style="font-size: 14px; color: #6b7280;">تم تحديث الـ API لضمان لقط الشارع والقرية بدقة عالية.</p>
+    <h3 style="margin-top: 0; color: #1e2937;">📍 تحديد الموقع التفصيلي أوتوماتيك</h3>
+    <p style="font-size: 14px; color: #6b7280;">السيستم يجلب الشارع والمركز والمحافظة بدون الحاجة لفيزا جوجل.</p>
 
     <div class="address-box">
-        <strong>📍 العنوان الملتقط:</strong>
-        <div id="cityName" style="color: #2563eb; font-weight: bold; margin-top: 5px;">جاري تحديد موقعك الفعلي...</div>
+        <strong>🗺️ تفاصيل العنوان الحالي الدقيق:</strong>
+        <div id="streetName" style="color: #2563eb; font-weight: bold; margin-top: 5px;">جاري تشغيل الـ GPS...</div>
     </div>
 
     <div class="payload-box">
@@ -60,14 +60,22 @@
 </div>
 
 <script>
-async function getExactLocation() {
-    let cityNameDiv = document.getElementById('cityName');
+// ⚠️ حطي الـ Token المجاني بتاعك من موقع LocationIQ هنا
+const LOCATION_IQ_TOKEN = "pk.fab70d19cd0f26b0b2630069bd17c07c"; 
+
+async function getExactLocationNoVisa() {
+    let streetDiv = document.getElementById('streetName');
     let backendJsonDiv = document.getElementById('backendJson');
 
+    if (LOCATION_IQ_TOKEN === "YOUR_LOCATIONIQ_TOKEN") {
+        streetDiv.innerText = "❌ برجاء إضافة الـ LocationIQ Token في الكود أولاً";
+        return;
+    }
+
     const gpsOptions = {
-        enableHighAccuracy: true, // إجبار الجهاز على تشغيل حساس الـ GPS الحقيقي
+        enableHighAccuracy: true,
         timeout: 15000,
-        maximumAge: 0             // منع الكاش تماماً
+        maximumAge: 0
     };
 
     navigator.geolocation.getCurrentPosition(
@@ -75,45 +83,54 @@ async function getExactLocation() {
             let lat = position.coords.latitude;
             let lon = position.coords.longitude;
 
-            cityNameDiv.innerText = "جاري قراءة تفاصيل الشارع الحقيقي...";
+            streetDiv.innerText = "جاري جلب تفاصيل الشارع والمنطقة...";
 
             try {
-                // استخدام BigDataCloud API البديل والقوي (يدعم اللغة العربية)
-                let url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=ar`;
+                // استدعاء سيرفر LocationIQ المحسن ودعم اللغة العربية
+                let url = `https://us1.locationiq.com/v1/reverse?key=${LOCATION_IQ_TOKEN}&lat=${lat}&lon=${lon}&format=json&accept-language=ar`;
                 let response = await fetch(url);
                 let data = await response.json();
 
-                // استخراج المسميات بدقة (المنطقة الحالية، المدينة، المحافظة)
-                let locality = data.locality || ""; 
-                let city = data.city || "قويسنا";
-                let principalSubdivision = data.principalSubdivision || "المنوفية";
+                if (data && data.address) {
+                    let addr = data.address;
 
-                // تنسيق العنوان ليظهر بشكل احترافي
-                let fullAddress = [locality, city, principalSubdivision].filter(Boolean).join('، ');
+                    // تقسيم العنوان تفصيلياً حسب المتاح في الداتا
+                    let street = addr.road || addr.suburb || addr.neighbourhood || ""; // الشارع أو الحي
+                    let city = addr.village || addr.town || addr.city || "قويسنا";    // القرية أو المركز
+                    let state = addr.state || "المنوفية";                             // المحافظة
 
-                cityNameDiv.innerText = fullAddress;
+                    // تركيب العنوان بالترتيب المظبوط
+                    let fullAddress = [street, city, state].filter(Boolean).join('، ');
 
-                // إرسال البيانات النظيفة للباكيند
-                backendJsonDiv.innerText = JSON.stringify({
-                    latitude: lat,
-                    longitude: lon,
-                    address: fullAddress,
-                    provider: "BigDataCloud"
-                }, null, 2);
+                    streetDiv.innerText = fullAddress;
+
+                    // تجهيز البيانات الصافية للباكيند
+                    backendJsonDiv.innerText = JSON.stringify({
+                        latitude: lat,
+                        longitude: lon,
+                        street: street,
+                        city_or_center: city,
+                        governorate: state,
+                        full_address: fullAddress
+                    }, null, 2);
+
+                } else {
+                    streetDiv.innerText = "❌ فشل السيرفر في تقسيم العنوان";
+                }
 
             } catch (error) {
-                cityNameDiv.innerText = "قويسنا، المنوفية (عطل في السيرفر البديل)";
+                streetDiv.innerText = "❌ حدث خطأ أثناء الاتصال بسيرفر الموقع";
             }
         },
         (error) => {
-            cityNameDiv.innerText = "❌ فشل لقط الـ GPS. تأكدي من تفعيل الموقع في إعدادات الموبايل.";
+            streetDiv.innerText = "❌ يرجى تفعيل الـ GPS وإعطاء الصلاحية للمتصفح";
         },
         gpsOptions
     );
 }
 
-// تشغيل الفانكشن أوتوماتيك فور فتح الصفحة
-window.onload = getExactLocation;
+// التشغيل التلقائي فور فتح الصفحة
+window.onload = getExactLocationNoVisa;
 </script>
 
 </body>
