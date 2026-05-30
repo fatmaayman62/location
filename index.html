@@ -3,11 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MedLink - Smart Arabic Location Picker (Photon API)</title>
-    
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
+    <title>MedLink - Pure Auto Address Detector</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -23,225 +19,184 @@
         }
         .card {
             background: white;
-            padding: 25px;
+            padding: 30px;
             border-radius: 16px;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            max-width: 550px;
+            max-width: 500px;
             width: 100%;
-        }
-        .search-container {
-            position: relative;
-            margin-bottom: 15px;
             text-align: right;
         }
-        label {
+        .status-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .status-badge {
+            padding: 6px 12px;
+            font-size: 13px;
+            border-radius: 20px;
+            background-color: #f3f4f6;
+            color: #4b5563;
             font-weight: bold;
-            font-size: 15px;
-            color: #374151;
-            display: block;
+        }
+        .address-box {
+            background-color: #eff6ff;
+            border: 2px dashed #3b82f6;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .address-title {
+            font-size: 14px;
+            color: #1e3a8a;
+            font-weight: bold;
             margin-bottom: 8px;
         }
-        input[type="text"] {
-            width: 100%;
-            padding: 14px;
-            font-size: 15px;
-            border: 2px solid #2563eb; 
-            border-radius: 8px;
-            box-sizing: border-box;
-            outline: none;
-            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.1);
-            text-align: right;
-        }
-        .autocomplete-results {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: white;
-            border: 1px solid #d1d5db;
-            border-radius: 0 0 8px 8px;
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 1000; 
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            display: none;
-            text-align: right;
-        }
-        .autocomplete-item {
-            padding: 12px;
-            font-size: 13px;
-            cursor: pointer;
-            border-bottom: 1px solid #f3f4f6;
-            color: #1f2937;
-        }
-        .autocomplete-item:hover {
-            background-color: #eff6ff;
-            color: #2563eb;
-        }
-        #map {
-            height: 320px;
-            width: 100%;
-            border-radius: 12px;
-            border: 1px solid #e5e7eb;
-            z-index: 1;
-        }
-        .result-box {
-            margin-top: 15px;
-            text-align: right;
-            background: #f9fafb;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #e5e7eb;
+        .address-text {
+            font-size: 16px;
+            color: #1d4ed8;
+            font-weight: bold;
+            line-height: 1.6;
         }
         .payload-box {
-            margin-top: 10px;
             background: #f0fdf4;
             border: 1px solid #bbf7d0;
-            padding: 12px;
-            border-radius: 6px;
+            padding: 15px;
+            border-radius: 8px;
             font-family: monospace;
             color: #16a34a;
             font-size: 13px;
             direction: ltr;
             text-align: left;
         }
+        .btn-retry {
+            width: 100%;
+            background-color: #10b981;
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.2s;
+        }
+        .btn-retry:hover {
+            background-color: #059669;
+        }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h3 style="margin: 0 0 15px 0; text-align: center; color: #1e2937;">محدد المواقع المتطور - MedLink 🔍</h3>
-    
-    <div class="search-container">
-        <label for="addressSearch">✍️ اكتب اسم قريتك أو منطقتك (Photon API):</label>
-        <input type="text" id="addressSearch" placeholder="مثال: قويسنا...">
-        <div id="autocompleteResults" class="autocomplete-results"></div>
+    <div class="status-container">
+        <h3 style="margin: 0; color: #1e2937;">تحديد العنوان تلقائياً 📡</h3>
+        <div id="gpsStatus" class="status-badge">⏳ جاري طلب الـ GPS...</div>
     </div>
 
-    <div id="map"></div>
-
-    <div class="result-box">
-        <span style="font-size: 13px; color: #4b5563; font-weight: bold;">📍 الموقع المحدد حالياً:</span>
-        <div id="currentPlaceName" style="font-weight: bold; color: #2563eb; margin-top: 6px; font-size: 14px;">جاري التحديد...</div>
-        
-        <div class="payload-box">
-            🚀 Payload for Backend Team:<br>
-            <pre style="margin: 5px 0 0 0;" id="backendJson">{ "latitude": 30.4874, "longitude": 31.1319 }</pre>
-        </div>
+    <div class="address-box">
+        <div class="address-title">🛣️ اسم الشارع / المنطقة الحالية:</div>
+        <div id="streetName" class="address-text">جاري قراءة الـ GPS وتحديد مكانك المباشر...</div>
     </div>
+
+    <div class="payload-box">
+        📦 Payload for Backend:<br>
+        <pre style="margin: 8px 0 0 0; font-weight: bold;" id="backendJson">{ "latitude": 0, "longitude": 0, "address": "" }</pre>
+    </div>
+
+    <button class="btn-retry" onclick="autoDetectStreet()">تحديث الموقع الحالي 🔄</button>
 </div>
 
 <script>
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-    iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-    iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-});
+// دالة لقط الموقع التلقائي الحقيقي
+function autoDetectStreet() {
+    const statusBadge = document.getElementById('gpsStatus');
+    const streetText = document.getElementById('streetName');
 
-let startLat = 30.4874;
-let startLon = 31.1319;
-
-const map = L.map('map').setView([startLat, startLon], 12);
-
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '© OpenStreetMap'
-}).addTo(map);
-
-const marker = L.marker([startLat, startLon], { draggable: true }).addTo(map);
-
-function updateLocationUI(lat, lon, displayName) {
-    document.getElementById('currentPlaceName').innerText = displayName;
-    document.getElementById('backendJson').innerText = JSON.stringify({
-        latitude: parseFloat(lat.toFixed(6)),
-        longitude: parseFloat(lon.toFixed(6))
-    }, null, 2);
-}
-
-updateLocationUI(startLat, startLon, "قويسنا، المنوفية، مصر");
-
-const searchInput = document.getElementById('addressSearch');
-const resultsDiv = document.getElementById('autocompleteResults');
-
-searchInput.addEventListener('input', debounce(async (e) => {
-    const query = e.target.value;
-    if (query.length < 3) { resultsDiv.style.display = 'none'; return; }
-
-    try {
-        // ✨ استخدام Photon API المدمج مع فلتر ذكي يدعم العربي والـ Fuzzy Search
-        const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&lang=ar&limit=5`;
-        const response = await fetch(url);
-        const data = await response.json();
-        
-        // Photon يرجع البيانات في هيئة GeoJSON (features)
-        const locations = data.features || [];
-
-        resultsDiv.innerHTML = '';
-        if (locations.length > 0) {
-            resultsDiv.style.display = 'block';
-        } else {
-            resultsDiv.style.display = 'none';
-        }
-
-        locations.forEach(loc => {
-            const props = loc.properties;
-            const coords = loc.geometry.coordinates; // تأتي بنظام [lon, lat]
-            
-            // صياغة الاسم بشكل منسق ومفهوم للمستخدم العربي
-            const name = props.name || "";
-            const city = props.city || props.town || "";
-            const state = props.state || "";
-            const fullDisplayName = [name, city, state].filter(Boolean).join('، ') || "موقع تم العثور عليه";
-
-            const option = document.createElement('div');
-            option.className = 'autocomplete-item';
-            option.innerText = fullDisplayName;
-            
-            option.onclick = () => {
-                const lon = parseFloat(coords[0]);
-                const lat = parseFloat(coords[1]);
-                
-                searchInput.value = fullDisplayName;
-                resultsDiv.style.display = 'none';
-                
-                map.flyTo([lat, lon], 16, { animate: true, duration: 1.5 });
-                marker.setLatLng([lat, lon]);
-                
-                updateLocationUI(lat, lon, fullDisplayName);
-                marker.bindPopup(`<b>الموقع المؤكد:</b><br>${fullDisplayName}`).openPopup();
-            };
-            resultsDiv.appendChild(option);
-        });
-    } catch (err) { 
-        console.error("خطأ في جلب بيانات البحث:", err); 
+    if (!navigator.geolocation) {
+        statusBadge.innerText = "❌ غير مدعوم";
+        statusBadge.style.backgroundColor = "#fee2e2";
+        statusBadge.style.color = "#991b1b";
+        streetText.innerText = "متصفحك لا يدعم تحديد الموقع التلقائي.";
+        return;
     }
-}, 400));
 
-// الـ Reverse Geocoding عند سحب الدبوس يدويًا (يمكن الإبقاء على Nominatim هنا لأنه مستقر جداً في الإحداثيات العكسية)
-marker.on('dragend', async function () {
-    const pos = marker.getLatLng();
-    try {
-        const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.lat}&lon=${pos.lng}&accept-language=ar`;
-        const response = await fetch(url);
-        const data = await response.json();
-        updateLocationUI(pos.lat, pos.lng, data.display_name || "موقع مخصص على الخريطة");
-    } catch {
-        updateLocationUI(pos.lat, pos.lng, "موقع مخصص على الخريطة");
-    }
-});
+    statusBadge.innerText = "⏳ جاري التحديد البث المباشر...";
+    statusBadge.style.backgroundColor = "#f3f4f6";
+    statusBadge.style.color = "#4b5563";
 
-function debounce(func, delay) {
-    let timer;
-    return function (...args) {
-        clearTimeout(timer);
-        timer = setTimeout(() => func.apply(this, args), delay);
+    // إعدادات صارمة لضمان تشغيل حساس الـ GPS الحقيقي ومنع اعتماد المتصفح على مكان الـ IP الكاذب
+    const geoOptions = {
+        enableHighAccuracy: true, // إجبار الجهاز على استخدام الـ GPS أو أبراج التغطية وليس الـ IP المركزي
+        timeout: 15000,           // مهلة كافية للاتصال بالأقمار الصناعية
+        maximumAge: 0             // تصفير الكاش تماماً لرفض أي موقع قديم مخزن في المتصفح
     };
+
+    navigator.geolocation.getCurrentPosition(
+        async (position) => {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+
+            statusBadge.innerText = "✅ متصل";
+            statusBadge.style.backgroundColor = "#dcfce7";
+            statusBadge.style.color = "#166534";
+
+            try {
+                // طلب استخراج المسميات العربية من الإحداثيات الدقيقة الصافية
+                const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ar`;
+                const response = await fetch(url);
+                const data = await response.json();
+
+                const address = data.address || {};
+                
+                // فلترة وعزل التسميات لتبدأ من الشارع والحي ثم القرية والمركز
+                const street = address.road || address.suburb || address.neighbourhood || "";
+                const city = address.village || address.town || address.city || "";
+                const state = address.state || "";
+                
+                const fullStreetAddress = [street, city, state].filter(Boolean).join('، ') || data.display_name;
+
+                // تحديث واجهة المستخدم بالشارع الصحيح
+                streetText.innerText = fullStreetAddress;
+
+                // طباعة الأوبجكت الجاهز للإرسال الفوري لـ API المشروع
+                document.getElementById('backendJson').innerText = JSON.stringify({
+                    latitude: parseFloat(lat.toFixed(6)),
+                    longitude: parseFloat(lon.toFixed(6)),
+                    detected_address: fullStreetAddress
+                }, null, 2);
+
+            } catch (err) {
+                streetText.innerText = "تم لقط الإحداثيات، وفشل جلب الاسم العربي مؤقتاً.";
+                document.getElementById('backendJson').innerText = JSON.stringify({
+                    latitude: parseFloat(lat.toFixed(6)),
+                    longitude: parseFloat(lon.toFixed(6)),
+                    detected_address: "Unknown"
+                }, null, 2);
+            }
+        },
+        (error) => {
+            statusBadge.style.backgroundColor = "#fee2e2";
+            statusBadge.style.color = "#991b1b";
+            if (error.code === 1) {
+                statusBadge.innerText = "❌ الإذن مرفوض";
+                streetText.innerText = "يرجى السماح للموقع بالوصول إلى الـ GPS لتحديد مكانك الفعلي في قويسنا.";
+            } else {
+                statusBadge.innerText = "❌ عطل في الـ GPS";
+                streetText.innerText = "تأكد من تفعيل خدمة الموقع (Location) في جهازك وتحديث الصفحة.";
+            }
+        },
+        geoOptions
+    );
 }
 
-document.addEventListener('click', (e) => {
-    if (e.target !== searchInput) resultsDiv.style.display = 'none';
-});
+// تشغيل الفانكشن تلقائياً عند تحميل الصفحة بالكامل
+window.onload = autoDetectStreet;
 </script>
+
 </body>
 </html>
