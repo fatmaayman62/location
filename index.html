@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MedLink - Ultimate Location Picker</title>
+    <title>MedLink - Universal Location Picker</title>
     <style>
         body {
             font-family: sans-serif;
@@ -46,7 +46,7 @@
             border-radius: 8px;
             margin-top: 10px;
         }
-        select, input {
+        input {
             width: 100%;
             padding: 8px;
             margin-top: 5px;
@@ -71,35 +71,24 @@
 <body>
 
 <div class="card">
-    <h3 style="margin-top: 0; color: #1e2937;">📍 محدد الموقع الذكي المتكامل</h3>
-    <p style="font-size: 14px; color: #6b7280;">السيستم يلقط الإحداثيات أوتوماتيك، ويسمح بتحديد القرية والشارع بدقة بالغة.</p>
+    <h3 style="margin-top: 0; color: #1e2937;">📍 محدد الموقع الذكي العالمي</h3>
+    <p style="font-size: 14px; color: #6b7280;">السيستم يلقط المحافظة والمركز والقرية أوتوماتيك لأي مكان، مع إمكانية التعديل لتأكيد دقة العنوان.</p>
 
     <div class="address-box">
-        <div class="detail-item">🏢 المركز / المدينة: <span id="citySpan">قويسنا</span></div>
-        <div class="detail-item">🗺️ المحافظة: <span id="governorateSpan">المنوفية</span></div>
+        <div class="detail-item">🏢 المدينة / المركز: <span id="citySpan">جاري التحديد...</span></div>
+        <div class="detail-item">🗺️ المحافظة: <span id="governorateSpan">جاري التحديد...</span></div>
         <div class="detail-item">🏘️ القرية / المنطقة الحاليّة: <span id="villageSpan">جاري التحديد...</span></div>
         <div class="detail-item">🛣️ الشارع: <span id="streetSpan">جاري التحديد...</span></div>
     </div>
 
     <div class="manual-section">
-        <label style="font-weight: bold; color: #c2410c;">✍️ لتأكيد تفاصيل عنوانك بدقة:</label>
+        <label style="font-weight: bold; color: #c2410c;">✍️ لتأكيد أو تعديل تفاصيل عنوانك:</label>
         
-        <label for="villageSelect">اختر القرية / المنطقة:</label>
-        <select id="villageSelect" onchange="updatePayloadFields()">
-            <option value="الرمالي">الرمالي</option>
-            <option value="مصطاي">مصطاي</option>
-            <option value="طه شبرا">طه شبرا</option>
-            <option value="أبنهس">أبنهس</option>
-            <option value="قويسنا البلد">قويسنا البلد</option>
-            <option value="المنشأة الكبرى">المنشأة الكبرى</option>
-            <option value="بجيرم">بجيرم</option>
-            <option value="ميت برة">ميت برة</option>
-            <option value="وسط المدينة / قويسنا المحطة">وسط المدينة / قويسنا المحطة</option>
-            <option value="أخرى">قرية أخرى...</option>
-        </select>
+        <label for="villageInput">القرية / المنطقة:</label>
+        <input type="text" id="villageInput" placeholder="جاري قراءة المنطقة تلقائياً..." oninput="syncManualChanges()">
 
         <label for="streetInput">اسم الشارع / علامة مميزة:</label>
-        <input type="text" id="streetInput" placeholder="مثال: شارع المحطة، بجوار صيدلية..." oninput="updatePayloadFields()">
+        <input type="text" id="streetInput" placeholder="جاري تحديد الشارع تلقائياً..." oninput="syncManualChanges()">
     </div>
 
     <div class="payload-box">
@@ -112,6 +101,8 @@
 const LOCATION_IQ_TOKEN = "pk.fab70d19cd0f26b0b2630069bd17c07c"; 
 let globalLat = 0;
 let globalLon = 0;
+let dynamicGov = "";
+let dynamicCity = "";
 
 async function autoDetectCoordinates() {
     const gpsOptions = { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 };
@@ -128,61 +119,73 @@ async function autoDetectCoordinates() {
 
                 if (data && data.address) {
                     let addr = data.address;
+                    let fullText = data.display_name || "";
+                    let addressParts = fullText.split(',').map(part => part.trim());
+
+                    // 1. قراءة المحافظة والمركز ديناميكياً لأي محافظة في الجمهورية
+                    dynamicGov = addr.state || addr.province || "غير محدد";
+                    dynamicCity = addr.city || addr.town || addr.borough || "غير محدد";
                     
-                    // محاولة قراءة القرية والشارع أوتوماتيك لو الإشارة قوية
-                    let detectedVillage = addr.village || addr.suburb || addr.neighbourhood || "";
-                    let detectedStreet = addr.road || "";
-
-                    if(detectedVillage && !detectedVillage.includes("بركة السبع")) {
-                        document.getElementById('villageSpan').innerText = detectedVillage;
-                        // تحديث الـ Select لو القرية المكتشفة موجودة فيه
-                        document.getElementById('villageSelect').value = "أخرى";
-                    } else {
-                        document.getElementById('villageSpan').innerText = document.getElementById('villageSelect').value;
+                    // 2. استخراج اسم القرية والشارع ديناميكياً بناءً على إحداثيات المستخدم الحالية
+                    let detectedVillage = addr.village || addr.suburb || addr.neighbourhood || addr.hamlet || "";
+                    if (!detectedVillage || detectedVillage === dynamicCity) {
+                        detectedVillage = addressParts[1] || addressParts[0] || "المنطقة الحالية";
                     }
 
-                    if(detectedStreet) {
-                        document.getElementById('streetSpan').innerText = detectedStreet;
-                        document.getElementById('streetInput').value = detectedStreet;
-                    } else {
-                        document.getElementById('streetSpan').innerText = "شارع فرعي";
+                    let detectedStreet = addr.road || addressParts[0] || "شارع فرعي";
+                    if (detectedStreet === detectedVillage) {
+                        detectedStreet = "شارع فرعي";
                     }
+
+                    // 3. حقن البيانات المستخرجة أوتوماتيكياً جوة خانات الكتابة والتأكيد (Inputs)
+                    document.getElementById('villageInput').value = detectedVillage;
+                    document.getElementById('streetInput').value = detectedStreet;
+
+                    // 4. عرض المحافظة والمركز في المربع العلوي
+                    document.getElementById('citySpan').innerText = dynamicCity;
+                    document.getElementById('governorateSpan').innerText = dynamicGov;
+                    
+                    // تحديث العرض الـ الـ Payload فوراً
+                    syncManualChanges(); 
                 }
-                updatePayloadFields();
             } catch (error) {
-                updatePayloadFields();
+                console.error("Error fetching location data", error);
             }
         },
         (error) => {
-            document.getElementById('villageSpan').innerText = "تم حظر الـ GPS يدويًا";
-            updatePayloadFields();
+            console.error(error);
+            document.getElementById('citySpan').innerText = "🔴 مقفول";
+            document.getElementById('governorateSpan').innerText = "🔴 مقفول";
+            document.getElementById('villageSpan').innerText = "يرجى تشغيل الـ GPS";
+            document.getElementById('streetSpan').innerText = "الموقع مقفول";
         },
         gpsOptions
     );
 }
 
-// فانكشن بتجمع البيانات الدقيقة (GPS + الاختيارات) وتعمل الـ Payload النضيف للباكيند
-function updatePayloadFields() {
-    let selectedVillage = document.getElementById('villageSelect').value;
-    let typedStreet = document.getElementById('streetInput').value || "شارع فرعي";
-    
-    // تحديث العرض فوق
-    document.getElementById('villageSpan').innerText = selectedVillage;
-    document.getElementById('streetSpan').innerText = typedStreet;
+// دالة المزامنة: تجمع ما هو مكتوب حالياً وترسله ديناميكياً للباكيند والـ DOM العلوي
+function syncManualChanges() {
+    let currentVillage = document.getElementById('villageInput').value || "المنطقة الحالية";
+    let currentStreet = document.getElementById('streetInput').value || "شارع فرعي";
 
-    // تجهيز الـ JSON الاحترافي للباكيند
+    // تحديث الشاشة فوق لحظياً
+    document.getElementById('villageSpan').innerText = currentVillage;
+    document.getElementById('streetSpan').innerText = currentStreet;
+
+    // بناء الـ Payload العالمي النظيف والجاهز للإرسال لقاعدة البيانات
     document.getElementById('backendJson').innerText = JSON.stringify({
         latitude: globalLat,
         longitude: globalLon,
-        governorate: "المنوفية",
-        city: "قويسنا",
-        village: selectedVillage,
-        street: typedStreet,
-        formatted_address: `قرية ${selectedVillage}، شارع ${typedStreet}، مركز قويسنا، محافظة المنوفية`
+        governorate: dynamicGov || "جاري جلبها...", 
+        city: dynamicCity || "جاري جلبها...",       
+        village: currentVillage,         
+        street: currentStreet,           
+        formatted_address: `${currentVillage}، ${currentStreet}، ${dynamicCity}، ${dynamicGov}`,
+        updated_at: new Date().toISOString()
     }, null, 2);
 }
 
-// التفعيل التلقائي
+// التفعيل التلقائي عند فتح الصفحة
 window.onload = autoDetectCoordinates;
 </script>
 
