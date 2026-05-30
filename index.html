@@ -1,192 +1,317 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MedLink - Universal Location Picker</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background-color: #f3f4f6;
-            margin: 0;
-        }
-        .card {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            max-width: 450px;
-            width: 100%;
-            text-align: right;
-        }
-        .address-box {
-            background-color: #eff6ff;
-            border: 2px dashed #2563eb;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 15px 0;
-        }
-        .detail-item {
-            margin-bottom: 10px;
-            font-size: 15px;
-            color: #1e2937;
-        }
-        .detail-item span {
-            color: #2563eb;
-            font-weight: bold;
-        }
-        .manual-section {
-            background: #fff7ed;
-            border: 1px solid #ffedd5;
-            padding: 12px;
-            border-radius: 8px;
-            margin-top: 10px;
-        }
-        input {
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-            margin-bottom: 10px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            box-sizing: border-box;
-        }
-        .payload-box {
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            padding: 15px;
-            border-radius: 8px;
-            font-family: monospace;
-            color: #16a34a;
-            direction: ltr;
-            text-align: left;
-            margin-top: 15px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MedLink - Universal Location Picker</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+    background:#f3f4f6;
+    margin:0;
+    padding:20px;
+}
+
+.card{
+    background:white;
+    padding:30px;
+    border-radius:12px;
+    box-shadow:0 4px 10px rgba(0,0,0,.1);
+    max-width:500px;
+    width:100%;
+}
+
+.address-box{
+    background:#eff6ff;
+    border:2px dashed #2563eb;
+    padding:15px;
+    border-radius:8px;
+    margin:15px 0;
+}
+
+.detail-item{
+    margin-bottom:10px;
+    color:#1e2937;
+}
+
+.detail-item span{
+    color:#2563eb;
+    font-weight:bold;
+}
+
+.manual-section{
+    background:#fff7ed;
+    border:1px solid #ffedd5;
+    padding:12px;
+    border-radius:8px;
+    margin-top:10px;
+}
+
+input{
+    width:100%;
+    padding:10px;
+    margin-top:5px;
+    margin-bottom:10px;
+    border:1px solid #cbd5e1;
+    border-radius:6px;
+    box-sizing:border-box;
+}
+
+.payload-box{
+    background:#f0fdf4;
+    border:1px solid #bbf7d0;
+    padding:15px;
+    border-radius:8px;
+    margin-top:15px;
+    font-family:monospace;
+    overflow:auto;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    border:none;
+    background:#2563eb;
+    color:white;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:16px;
+    margin-bottom: 10px;
+}
+
+button:hover{
+    background:#1d4ed8;
+}
+</style>
 </head>
 <body>
 
 <div class="card">
-    <h3 style="margin-top: 0; color: #1e2937;">📍 محدد الموقع الذكي العالمي:-</h3>
-    <p style="font-size: 14px; color: #6b7280;">السيستم يلقط المحافظة والمركز والقرية أوتوماتيك لأي مكان، مع إمكانية التعديل لتأكيد دقة العنوان.</p>
+
+    <h2>📍 محدد الموقع الذكي</h2>
+
+    <p>
+        التقاط الموقع الحالي واستخراج المحافظة والمدينة والمنطقة والشارع تلقائياً.
+    </p>
+
+    <button onclick="autoDetectCoordinates()">
+        تحديد موقعي الحالي
+    </button>
 
     <div class="address-box">
-        <div class="detail-item">🏢 المدينة / المركز: <span id="citySpan">جاري التحديد...</span></div>
-        <div class="detail-item">🗺️ المحافظة: <span id="governorateSpan">جاري التحديد...</span></div>
-        <div class="detail-item">🏘️ القرية / المنطقة الحاليّة: <span id="villageSpan">جاري التحديد...</span></div>
-        <div class="detail-item">🛣️ الشارع: <span id="streetSpan">جاري التحديد...</span></div>
+
+        <div class="detail-item">
+            🏢 المدينة / المركز:
+            <span id="citySpan">جاري التحديد...</span>
+        </div>
+
+        <div class="detail-item">
+            🗺️ المحافظة:
+            <span id="governorateSpan">جاري التحديد...</span>
+        </div>
+
+        <div class="detail-item">
+            🏘️ المنطقة / القرية:
+            <span id="villageSpan">جاري التحديد...</span>
+        </div>
+
+        <div class="detail-item">
+            🛣️ الشارع:
+            <span id="streetSpan">جاري التحديد...</span>
+        </div>
+
     </div>
 
     <div class="manual-section">
-        <label style="font-weight: bold; color: #c2410c;">✍️ لتأكيد أو تعديل تفاصيل عنوانك:</label>
-        
-        <label for="villageInput">القرية / المنطقة:</label>
-        <input type="text" id="villageInput" placeholder="جاري قراءة المنطقة تلقائياً..." oninput="syncManualChanges()">
 
-        <label for="streetInput">اسم الشارع / علامة مميزة:</label>
-        <input type="text" id="streetInput" placeholder="جاري تحديد الشارع تلقائياً..." oninput="syncManualChanges()">
+        <h4>✍️ تعديل البيانات</h4>
+
+        <label>المنطقة / القرية</label>
+        <input
+            type="text"
+            id="villageInput"
+            placeholder="جاري قراءة المنطقة تلقائياً..."
+            oninput="syncManualChanges()"
+        >
+
+        <label>الشارع</label>
+        <input
+            type="text"
+            id="streetInput"
+            placeholder="جاري قراءة الشارع تلقائياً..."
+            oninput="syncManualChanges()"
+        >
+
     </div>
 
     <div class="payload-box">
         📦 Payload for Backend:<br>
         <pre id="backendJson">{ "latitude": 0, "longitude": 0 }</pre>
     </div>
+
 </div>
 
 <script>
-const LOCATION_IQ_TOKEN = "pk.fab70d19cd0f26b0b2630069bd17c07c"; 
+
+// ضع مفتاحك هنا الخاص بـ LocationIQ
+const LOCATION_IQ_TOKEN = "pk.fab70d19cd0f26b0b2630069bd17c07c";
+
 let globalLat = 0;
 let globalLon = 0;
+
 let dynamicGov = "";
 let dynamicCity = "";
 
-async function autoDetectCoordinates() {
-    const gpsOptions = { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 };
+function syncManualChanges(){
+
+    const village =
+        document.getElementById("villageInput").value ||
+        "غير محدد";
+
+    const street =
+        document.getElementById("streetInput").value ||
+        "غير محدد";
+
+    document.getElementById("villageSpan").innerText = village;
+    document.getElementById("streetSpan").innerText = street;
+
+    document.getElementById("backendJson").textContent =
+        JSON.stringify(
+            {
+                latitude: globalLat,
+                longitude: globalLon,
+                governorate: dynamicGov || "غير محدد",
+                city: dynamicCity || "غير محدد",
+                village: village,
+                street: street,
+                formatted_address:
+                    `${street}, ${village}, ${dynamicCity || "غير محدد"}, ${dynamicGov || "غير محدد"}`,
+                updated_at: new Date().toISOString()
+            },
+            null,
+            2
+        );
+}
+
+async function autoDetectCoordinates(){
+
+    if(!navigator.geolocation){
+        alert("Geolocation غير مدعوم في هذا المتصفح");
+        return;
+    }
 
     navigator.geolocation.getCurrentPosition(
-        async (position) => {
+
+        async(position)=>{
+
             globalLat = position.coords.latitude;
             globalLon = position.coords.longitude;
 
-            try {
-                let url = `https://us1.locationiq.com/v1/reverse?key=${LOCATION_IQ_TOKEN}&lat=${globalLat}&lon=${globalLon}&format=json&accept-language=ar`;
-                let response = await fetch(url);
-                let data = await response.json();
+            try{
 
-                if (data && data.address) {
-                    let addr = data.address;
-                    let fullText = data.display_name || "";
-                    let addressParts = fullText.split(',').map(part => part.trim());
+                const response = await fetch(
+                    `https://us1.locationiq.com/v1/reverse?key=${LOCATION_IQ_TOKEN}&lat=${globalLat}&lon=${globalLon}&format=json&accept-language=ar`
+                );
 
-                    // 1. قراءة المحافظة والمركز ديناميكياً لأي محافظة في الجمهورية
-                    dynamicGov = addr.state || addr.province || "غير محدد";
-                    dynamicCity = addr.city || addr.town || addr.borough || "غير محدد";
-                    
-                    // 2. استخراج اسم القرية والشارع ديناميكياً بناءً على إحداثيات المستخدم الحالية
-                    let detectedVillage = addr.village || addr.suburb || addr.neighbourhood || addr.hamlet || "";
-                    if (!detectedVillage || detectedVillage === dynamicCity) {
-                        detectedVillage = addressParts[1] || addressParts[0] || "المنطقة الحالية";
-                    }
-
-                    let detectedStreet = addr.road || addressParts[0] || "شارع فرعي";
-                    if (detectedStreet === detectedVillage) {
-                        detectedStreet = "شارع فرعي";
-                    }
-
-                    // 3. حقن البيانات المستخرجة أوتوماتيكياً جوة خانات الكتابة والتأكيد (Inputs)
-                    document.getElementById('villageInput').value = detectedVillage;
-                    document.getElementById('streetInput').value = detectedStreet;
-
-                    // 4. عرض المحافظة والمركز في المربع العلوي
-                    document.getElementById('citySpan').innerText = dynamicCity;
-                    document.getElementById('governorateSpan').innerText = dynamicGov;
-                    
-                    // تحديث العرض الـ الـ Payload فوراً
-                    syncManualChanges(); 
+                if(!response.ok){
+                    throw new Error("فشل الاتصال بالخدمة");
                 }
-            } catch (error) {
-                console.error("Error fetching location data", error);
+
+                const data = await response.json();
+
+                if(data.error){
+                    throw new Error(data.error);
+                }
+
+                const addr = data.address || {};
+
+                dynamicGov =
+                    addr.state ||
+                    addr.province ||
+                    addr.region ||
+                    "غير محدد";
+
+                dynamicCity =
+                    addr.city ||
+                    addr.town ||
+                    addr.county ||
+                    addr.municipality ||
+                    addr.city_district ||
+                    addr.borough ||
+                    addr.state_district ||
+                    "غير محدد";
+
+                let village =
+                    addr.village ||
+                    addr.suburb ||
+                    addr.neighbourhood ||
+                    addr.residential ||
+                    addr.quarter ||
+                    addr.hamlet ||
+                    addr.locality ||
+                    "";
+
+                let street =
+                    addr.road ||
+                    addr.street ||
+                    addr.pedestrian ||
+                    addr.path ||
+                    "";
+
+                if(data.display_name){
+                    const parts = data.display_name
+                        .split(",")
+                        .map(p => p.trim());
+
+                    if(!village){
+                        village = parts[1] || "غير محدد";
+                    }
+
+                    if(!street){
+                        street = parts[0] || "شارع فرعي";
+                    }
+                }
+
+                // حقن البيانات في الـ Spans العلوية
+                document.getElementById("citySpan").innerText = dynamicCity;
+                document.getElementById("governorateSpan").innerText = dynamicGov;
+
+                // تحديث الـ Inputs ليرى المستخدم النصوص القادمة من الـ API
+                document.getElementById("villageInput").value = village;
+                document.getElementById("streetInput").value = street;
+
+                // مزامنة فورية لتحديث الـ Spans المتبقية والـ Payload النهائي
+                syncManualChanges();
+
+            }
+            catch(error){
+                console.error(error);
+                document.getElementById("citySpan").innerText = "خطأ";
+                document.getElementById("governorateSpan").innerText = "خطأ";
+                document.getElementById("villageSpan").innerText = "تعذر جلب الموقع";
+                document.getElementById("streetSpan").innerText = error.message;
             }
         },
-        (error) => {
+        (error)=>{
             console.error(error);
-            document.getElementById('citySpan').innerText = "🔴 مقفول";
-            document.getElementById('governorateSpan').innerText = "🔴 مقفول";
-            document.getElementById('villageSpan').innerText = "يرجى تشغيل الـ GPS";
-            document.getElementById('streetSpan').innerText = "الموقع مقفول";
+            alert("يرجى السماح للمتصفح بالوصول إلى الموقع (GPS) وتفعيل الميزة من إعدادات الجهاز.");
         },
-        gpsOptions
+        {
+            enableHighAccuracy:true,
+            timeout:15000,
+            maximumAge:0
+        }
     );
 }
 
-// دالة المزامنة: تجمع ما هو مكتوب حالياً وترسله ديناميكياً للباكيند والـ DOM العلوي
-function syncManualChanges() {
-    let currentVillage = document.getElementById('villageInput').value || "المنطقة الحالية";
-    let currentStreet = document.getElementById('streetInput').value || "شارع فرعي";
-
-    // تحديث الشاشة فوق لحظياً
-    document.getElementById('villageSpan').innerText = currentVillage;
-    document.getElementById('streetSpan').innerText = currentStreet;
-
-    // بناء الـ Payload العالمي النظيف والجاهز للإرسال لقاعدة البيانات
-    document.getElementById('backendJson').innerText = JSON.stringify({
-        latitude: globalLat,
-        longitude: globalLon,
-        governorate: dynamicGov || "جاري جلبها...", 
-        city: dynamicCity || "جاري جلبها...",       
-        village: currentVillage,         
-        street: currentStreet,           
-        formatted_address: `${currentVillage}، ${currentStreet}، ${dynamicCity}، ${dynamicGov}`,
-        updated_at: new Date().toISOString()
-    }, null, 2);
-}
-
-// التفعيل التلقائي عند فتح الصفحة
+// تشغيل تلقائي بمجرد تحميل الواجهة بالكامل
 window.onload = autoDetectCoordinates;
+
 </script>
 
 </body>
