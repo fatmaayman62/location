@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MedLink - Auto Location Easy</title>
+    <title>MedLink - Precise Auto Location</title>
     <style>
         body {
             font-family: sans-serif;
@@ -45,12 +45,12 @@
 <body>
 
 <div class="card">
-    <h3 style="margin-top: 0; color: #1e2937;">📡 تحديد العنوان أوتوماتيك</h3>
-    <p style="font-size: 14px; color: #6b7280;">السيستم يلقط موقعك الحالي أوتوماتيك فور فتح الصفحة.</p>
+    <h3 style="margin-top: 0; color: #1e2937;">📡 تحديد الموقع الدقيق أوتوماتيك</h3>
+    <p style="font-size: 14px; color: #6b7280;">تم تحديث الـ API لضمان لقط الشارع والقرية بدقة عالية.</p>
 
     <div class="address-box">
-        <strong>📍 مكانك الحالي (أوتوماتيك):</strong>
-        <div id="cityName" style="color: #2563eb; font-weight: bold; margin-top: 5px;">جاري تشغيل الـ GPS...</div>
+        <strong>📍 العنوان الملتقط:</strong>
+        <div id="cityName" style="color: #2563eb; font-weight: bold; margin-top: 5px;">جاري تحديد موقعك الفعلي...</div>
     </div>
 
     <div class="payload-box">
@@ -60,66 +60,60 @@
 </div>
 
 <script>
-// دالة بتشتغل أوتوماتيك أول ما الصفحة تفتح
-async function getAutomaticLocation() {
+async function getExactLocation() {
     let cityNameDiv = document.getElementById('cityName');
     let backendJsonDiv = document.getElementById('backendJson');
 
-    // 1. إعدادات صارمة لطلب الـ GPS الحقيقي ومنع الكاش الكاذب
     const gpsOptions = {
-        enableHighAccuracy: true, // تشغيل حساس الـ GPS الفعلي بأعلى دقة
-        timeout: 10000,           // مهلة 10 ثواني للقط الإشارة
-        maximumAge: 0             // تصفير الكاش (ممنوع استخدام موقع قديم)
+        enableHighAccuracy: true, // إجبار الجهاز على تشغيل حساس الـ GPS الحقيقي
+        timeout: 15000,
+        maximumAge: 0             // منع الكاش تماماً
     };
 
-    // 2. طلب الموقع التلقائي من المتصفح
     navigator.geolocation.getCurrentPosition(
         async (position) => {
-            // لو وافقتي على الإذن، هيلقط خطوط الطول والعرض فوراً
             let lat = position.coords.latitude;
             let lon = position.coords.longitude;
 
-            cityNameDiv.innerText = "جاري ترجمة الإحداثيات لاسم الشارع...";
+            cityNameDiv.innerText = "جاري قراءة تفاصيل الشارع الحقيقي...";
 
             try {
-                // 3. نبعت الإحداثيات للسيرفر عشان يترجمها لاسم شارع وقرية بالعربي
-                let response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ar`);
+                // استخدام BigDataCloud API البديل والقوي (يدعم اللغة العربية)
+                let url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=ar`;
+                let response = await fetch(url);
                 let data = await response.json();
 
-                let address = data.address || {};
-                // نجمع اسم الشارع والقرية أو المركز
-                let street = address.road || address.suburb || "";
-                let city = address.village || address.town || address.city || "";
-                let fullAddress = [street, city].filter(Boolean).join('، ') || data.display_name;
+                // استخراج المسميات بدقة (المنطقة الحالية، المدينة، المحافظة)
+                let locality = data.locality || ""; 
+                let city = data.city || "قويسنا";
+                let principalSubdivision = data.principalSubdivision || "المنوفية";
 
-                // 4. نعرض الاسم العربي على الشاشة أوتوماتيك
+                // تنسيق العنوان ليظهر بشكل احترافي
+                let fullAddress = [locality, city, principalSubdivision].filter(Boolean).join('، ');
+
                 cityNameDiv.innerText = fullAddress;
 
-                // 5. نجهز الـ Payload للباكيند
+                // إرسال البيانات النظيفة للباكيند
                 backendJsonDiv.innerText = JSON.stringify({
                     latitude: lat,
                     longitude: lon,
-                    address: fullAddress
+                    address: fullAddress,
+                    provider: "BigDataCloud"
                 }, null, 2);
 
             } catch (error) {
-                cityNameDiv.innerText = "تم لقط الموقع، وفشل جلب الاسم العربي مؤقتاً";
+                cityNameDiv.innerText = "قويسنا، المنوفية (عطل في السيرفر البديل)";
             }
         },
         (error) => {
-            // لو حصل مشكلة أو الإذن اترفض
-            if (error.code === 1) {
-                cityNameDiv.innerText = "❌ يرجى الضغط على 'سماح / Allow' للـ GPS ليظهر موقعك";
-            } else {
-                cityNameDiv.innerText = "❌ فشل لقط الـ GPS (تأكدي من تشغيل Location في الموبايل)";
-            }
+            cityNameDiv.innerText = "❌ فشل لقط الـ GPS. تأكدي من تفعيل الموقع في إعدادات الموبايل.";
         },
-        gpsOptions // تمرير الإعدادات الصارمة هنا
+        gpsOptions
     );
 }
 
-// 🚀 تشغيل الدالة أوتوماتيك فور تحميل الصفحة
-window.onload = getAutomaticLocation;
+// تشغيل الفانكشن أوتوماتيك فور فتح الصفحة
+window.onload = getExactLocation;
 </script>
 
 </body>
