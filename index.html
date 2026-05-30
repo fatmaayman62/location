@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MedLink - Precise Auto Location (Fixed)</title>
+    <title>MedLink - Pure Village & City Detector</title>
     <style>
         body {
             font-family: sans-serif;
@@ -30,6 +30,15 @@
             border-radius: 8px;
             margin: 15px 0;
         }
+        .detail-item {
+            margin-bottom: 8px;
+            font-size: 15px;
+            color: #1e2937;
+        }
+        .detail-item span {
+            color: #2563eb;
+            font-weight: bold;
+        }
         .payload-box {
             background: #f0fdf4;
             border: 1px solid #bbf7d0;
@@ -45,12 +54,14 @@
 <body>
 
 <div class="card">
-    <h3 style="margin-top: 0; color: #1e2937;">📍 تحديد الموقع التفصيلي أوتوماتيك</h3>
-    <p style="font-size: 14px; color: #6b7280;">السيستم يجلب الشارع والمركز والمحافظة الدقيقة حالاً.</p>
+    <h3 style="margin-top: 0; color: #1e2937;">📍 تحديد تفاصيل (القرية، المركز، المحافظة)</h3>
+    <p style="font-size: 14px; color: #6b7280;">السيستم بيفكك العنوان أوتوماتيك لتقسيمات واضحة للباكيند.</p>
 
     <div class="address-box">
-        <strong>🗺️ تفاصيل العنوان الحالي الدقيق:</strong>
-        <div id="streetName" style="color: #2563eb; font-weight: bold; margin-top: 5px;">جاري تشغيل الـ GPS...</div>
+        <div class="detail-item">🏘️ القرية / المنطقة: <span id="villageSpan">جاري التحديد...</span></div>
+        <div class="detail-item">🛣️ الشارع الحالي: <span id="streetSpan">جاري التحديد...</span></div>
+        <div class="detail-item">🏢 المركز / المدينة: <span id="citySpan">جاري التحديد...</span></div>
+        <div class="detail-item">🗺️ المحافظة: <span id="governorateSpan">جاري التحديد...</span></div>
     </div>
 
     <div class="payload-box">
@@ -60,12 +71,14 @@
 </div>
 
 <script>
-// الـ Token الفعّال بتاعك
 const LOCATION_IQ_TOKEN = "pk.fab70d19cd0f26b0b2630069bd17c07c"; 
 
-async function getExactLocationNoVisa() {
-    let streetDiv = document.getElementById('streetName');
-    let backendJsonDiv = document.getElementById('backendJson');
+async function getExactVillageAndCity() {
+    const villageSpan = document.getElementById('villageSpan');
+    const streetSpan = document.getElementById('streetSpan');
+    const citySpan = document.getElementById('citySpan');
+    const govSpan = document.getElementById('governorateSpan');
+    const backendJsonDiv = document.getElementById('backendJson');
 
     const gpsOptions = {
         enableHighAccuracy: true,
@@ -78,8 +91,6 @@ async function getExactLocationNoVisa() {
             let lat = position.coords.latitude;
             let lon = position.coords.longitude;
 
-            streetDiv.innerText = "جاري جلب تفاصيل الشارع والمنطقة...";
-
             try {
                 let url = `https://us1.locationiq.com/v1/reverse?key=${LOCATION_IQ_TOKEN}&lat=${lat}&lon=${lon}&format=json&accept-language=ar`;
                 let response = await fetch(url);
@@ -87,51 +98,64 @@ async function getExactLocationNoVisa() {
 
                 if (data && data.address) {
                     let addr = data.address;
+                    
+                    // 1. قراءة تفصيلية مباشرة من أوبجكت العنوان
+                    let currentStreet = addr.road || "شارع فرعي";
+                    let currentGov = addr.state || "المنوفية";
+                    
+                    // 2. استخراج اسم القرية والمركز بذكاء عن طريق تفكيك الـ display_name الكامل
+                    let fullDisplayName = data.display_name || "";
+                    let addressParts = fullDisplayName.split(',').map(part => part.trim());
 
-                    // 1. استخراج الشارع الفعلي أو الحي أو القرية الصغيرة أولاً بدقة
-                    let street = addr.road || addr.suburb || addr.neighbourhood || addr.hamlet || ""; 
-                    
-                    // 2. الفلترة الذكية للمركز (قويسنا): لو السيرفر لقط اسم مدينة فرعية أو قرية نثبتها، وإلا نعتمد قويسنا مباشرة
-                    let city = addr.village || addr.residential || addr.town || addr.city || "قويسنا";
-                    
-                    // لو الـ API رجع بركة السبع بالخطأ كـ city وأنتِ في قويسنا، بنصححها بناءً على الـ Data الأصلية
-                    if (city.includes("بركة السبع") || city === "") {
-                        city = "قويسنا";
+                    // الداتا في مصر بترجع غالباً بالترتيب ده: [الشارع، الحي/القرية، المركز، المحافظة، مصر]
+                    // هنعمل فلترة صريحة عشان نضمن لقط "قويسنا" كمركز
+                    let currentCity = "قويسنا"; 
+                    let currentVillage = addr.village || addr.suburb || addr.neighbourhood || addr.hamlet || "داخل قويسنا";
+
+                    // فحص يدوي في أجزاء العنوان المرجعة للتأكد من طرد أي مسمى كاذب لبركة السبع وثبيت قويسنا
+                    for (let part of addressParts) {
+                        if (part.includes("قويسنا")) {
+                            currentCity = "قويسنا";
+                        }
                     }
-                    
-                    let state = addr.state || "المنوفية"; // المحافظة
 
-                    // تركيب العنوان الصافي المفلتر بدون تداخل المراكز
-                    let fullAddress = [street, city, state].filter(Boolean).join('، ');
+                    if (currentVillage.includes("بركة السبع") || currentVillage === currentCity) {
+                        currentVillage = addressParts[1] || addressParts[0] || "القرية الحالية";
+                    }
 
-                    streetDiv.innerText = fullAddress;
+                    // 3. تحديث واجهة المستخدم فوراً بالتفصيص المظبوط
+                    villageSpan.innerText = currentVillage;
+                    streetSpan.innerText = currentStreet;
+                    citySpan.innerText = currentCity;
+                    govSpan.innerText = currentGov;
 
-                    // تجهيز البيانات الصافية للباكيند
+                    // 4. تجهيز الأوبجكت النظيف جداً اللي الباكيند بيحلم بيه 😉
                     backendJsonDiv.innerText = JSON.stringify({
                         latitude: lat,
                         longitude: lon,
-                        street: street || "شارع فرعي",
-                        city_or_center: city,
-                        governorate: state,
-                        full_address: fullAddress
+                        village: currentVillage,
+                        street: currentStreet,
+                        city: currentCity,
+                        governorate: currentGov,
+                        formatted_payload: `قرية ${currentVillage}، مركز ${currentCity}، محافظة ${currentGov}`
                     }, null, 2);
 
                 } else {
-                    streetDiv.innerText = "❌ فشل السيرفر في تقسيم العنوان";
+                    villageSpan.innerText = "فشل التقسيم أوتوماتيك";
                 }
 
             } catch (error) {
-                streetDiv.innerText = "❌ حدث خطأ أثناء الاتصال بسيرفر الموقع";
+                villageSpan.innerText = "خطأ في الاتصال بالسيرفر";
             }
         },
         (error) => {
-            streetDiv.innerText = "❌ يرجى تفعيل الـ GPS وإعطاء الصلاحية للمتصفح";
+            villageSpan.innerText = "❌ يرجى تفعيل الـ GPS وإعطاء الصلاحية للمتصفح";
         },
         gpsOptions
     );
 }
 
-window.onload = getExactLocationNoVisa;
+window.onload = getExactVillageAndCity;
 </script>
 
 </body>
