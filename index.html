@@ -1,274 +1,335 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MedLink - Universal Map Picker</title>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<title>Nearest Pharmacies Finder</title>
 
 <style>
-body{
-    font-family: Arial, sans-serif;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    min-height:100vh;
-    background:#f3f4f6;
+
+*{
     margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Arial, sans-serif;
+    background:#f5f7fa;
     padding:20px;
+}
+
+.container{
+    max-width:900px;
+    margin:auto;
+}
+
+h1{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+button{
+    display:block;
+    margin:auto;
+    padding:12px 25px;
+    border:none;
+    border-radius:8px;
+    background:#007bff;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#0056b3;
 }
 
 .card{
     background:white;
-    padding:30px;
-    border-radius:12px;
-    box-shadow:0 4px 10px rgba(0,0,0,.1);
-    max-width:500px;
-    width:100%;
+    padding:20px;
+    margin-top:20px;
+    border-radius:10px;
+    box-shadow:0 2px 8px rgba(0,0,0,.1);
 }
 
-/* صندوق الخريطة التفاعلية */
-#map {
-    width: 100%;
-    height: 250px;
-    border-radius: 8px;
-    margin-bottom: 15px;
-    background: #e5e7eb;
-    z-index: 1;
+.card h2{
+    margin-bottom:15px;
 }
 
-.address-box{
-    background:#eff6ff;
-    border:2px dashed #2563eb;
+.info{
+    margin-bottom:8px;
+}
+
+.pharmacy{
+    border:1px solid #ddd;
     padding:15px;
-    border-radius:8px;
-    margin:15px 0;
-}
-
-.detail-item{
-    margin-bottom:10px;
-    color:#1e2937;
-}
-
-.detail-item span{
-    color:#2563eb;
-    font-weight:bold;
-}
-
-.manual-section{
-    background:#fff7ed;
-    border:1px solid #ffedd5;
-    padding:12px;
     border-radius:8px;
     margin-top:10px;
 }
 
-input{
-    width:100%;
-    padding:10px;
-    margin-top:5px;
-    margin-bottom:10px;
-    border:1px solid #cbd5e1;
-    border-radius:6px;
-    box-sizing:border-box;
+.distance{
+    color:green;
+    font-weight:bold;
 }
 
-.payload-box{
-    background:#f0fdf4;
-    border:1px solid #bbf7d0;
-    padding:15px;
-    border-radius:8px;
-    margin-top:15px;
-    font-family:monospace;
-    overflow:auto;
-}
-
-button{
-    width:100%;
-    padding:12px;
-    border:none;
-    background:#2563eb;
-    color:white;
-    border-radius:8px;
-    cursor:pointer;
-    font-size:16px;
-    margin-bottom: 15px;
-}
-
-button:hover{
-    background:#1d4ed8;
-}
 </style>
 </head>
+
 <body>
 
-<div class="card">
+<div class="container">
 
-    <h2>📍 محدد الموقع الذكي الديناميكي</h2>
-    <p>التقاط خطوط الطول والعرض وتحديد المحافظة والمركز والقرية تلقائياً لأي مكان مع خريطة تفاعلية.</p>
+    <h1>Nearest Pharmacies Finder</h1>
 
-    <button onclick="getUserCurrentLocation()">تحديد موقعي الحالي بالـ GPS</button>
+    <button onclick="getUserLocation()">
+        Get My Location
+    </button>
 
-    <div id="map"></div>
+    <div id="locationInfo"></div>
 
-    <div class="address-box">
-        <div class="detail-item">🌐 خط العرض (Latitude): <span id="latSpan">---</span></div>
-        <div class="detail-item">🌐 خط الطول (Longitude): <span id="lonSpan">---</span></div>
-        <div class="detail-item">🏢 المدينة / المركز: <span id="citySpan">جاري التحديد...</span></div>
-        <div class="detail-item">🗺️ المحافظة: <span id="governorateSpan">جاري التحديد...</span></div>
-        <div class="detail-item">🏘️ المنطقة / القرية: <span id="villageSpan">جاري التحديد...</span></div>
-        <div class="detail-item">🛣️ الشارع: <span id="streetSpan">جاري التحديد...</span></div>
-    </div>
-
-    <div class="manual-section">
-        <h4>✍️ تعديل البيانات (اختياري)</h4>
-        <label>المنطقة / القرية</label>
-        <input type="text" id="villageInput" placeholder="جاري قراءة المنطقة تلقائياً..." oninput="syncManualChanges()">
-
-        <label>الشارع</label>
-        <input type="text" id="streetInput" placeholder="جاري قراءة الشارع تلقائياً..." oninput="syncManualChanges()">
-    </div>
-
-    <div class="payload-box">
-        📦 Payload for Backend:<br>
-        <pre id="backendJson">{ "latitude": 0, "longitude": 0 }</pre>
-    </div>
+    <div id="pharmacies"></div>
 
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 <script>
-// الـ Token الخاص بكِ من LocationIQ لفك الإحداثيات لأي مكان ديناميكياً
-const LOCATION_IQ_TOKEN = "pk.fab70d19cd0f26b0b2630069bd17c07c";
 
-let map;
-let marker;
-let globalLat = 0;
-let globalLon = 0;
-let dynamicGov = "";
-let dynamicCity = "";
+// Static Pharmacies
 
-// 1. تهيئة الخريطة المجانية فوراً (الافتراضي: القاهرة كموقع مبدئي)
-function initMap() {
-    const defaultLat = 30.0444;
-    const defaultLon = 31.2357;
+const pharmacies = [
 
-    map = L.map('map').setView([defaultLat, defaultLon], 13);
+{
+    name:"Pharmacy Cairo",
+    lat:30.0444,
+    lng:31.2357
+},
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '© OpenStreetMap'
-    }).addTo(map);
+{
+    name:"Pharmacy Giza",
+    lat:30.0131,
+    lng:31.2089
+},
 
-    // إضافة الدبوس القابل للسحب يدوياً
-    marker = L.marker([defaultLat, defaultLon], { draggable: true }).addTo(map);
+{
+    name:"Pharmacy Nasr City",
+    lat:30.0626,
+    lng:31.3301
+},
 
-    // حدث عند انتهاء سحب الدبوس يدوياً لتحديث المكان ديناميكياً
-    marker.on('dragend', function (e) {
-        const position = marker.getLatLng();
-        updateCoordinates(position.lat, position.lng);
-    });
+{
+    name:"Pharmacy Maadi",
+    lat:29.9602,
+    lng:31.2569
+},
 
-    // جلب موقع المستخدم الفعلي فوراً عند التحميل
-    getUserCurrentLocation();
+{
+    name:"Pharmacy Helwan",
+    lat:29.8414,
+    lng:31.3008
 }
 
-// 2. جلب إحداثيات الـ GPS الحقيقية من الماكينة/المتصفح
-function getUserCurrentLocation() {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                updateCoordinates(position.coords.latitude, position.coords.longitude);
-            },
-            (error) => {
-                console.error("GPS Error:", error);
-                // لو الصلاحية مقفولة، بيبدأ من القاهرة كـ Fallback
-                updateCoordinates(30.0444, 31.2357);
-            },
-            { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-        );
-    } else {
-        alert("الـ Geolocation غير مدعوم في هذا المتصفح.");
+];
+
+// Haversine Formula
+
+function getDistance(lat1, lon1, lat2, lon2){
+
+    const R = 6371;
+
+    const dLat = (lat2-lat1) * Math.PI/180;
+    const dLon = (lon2-lon1) * Math.PI/180;
+
+    const a =
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(lat1*Math.PI/180) *
+        Math.cos(lat2*Math.PI/180) *
+        Math.sin(dLon/2) *
+        Math.sin(dLon/2);
+
+    const c = 2 * Math.atan2(
+        Math.sqrt(a),
+        Math.sqrt(1-a)
+    );
+
+    return R * c;
+}
+
+// Get User Location
+
+async function getUserLocation(){
+
+    if(!navigator.geolocation){
+
+        alert("Geolocation is not supported.");
+        return;
     }
-}
 
-// 3. تحديث خطوط الطول والعرض، تحريك الدبوس، واستدعاء الـ API لعكس العنوان نصياً
-async function updateCoordinates(lat, lon) {
-    globalLat = lat;
-    globalLon = lon;
+    navigator.geolocation.getCurrentPosition(
 
-    // عرض خطوط الطول والعرض الحالية في الـ Spans بالملي
-    document.getElementById("latSpan").innerText = lat.toFixed(6);
-    document.getElementById("lonSpan").innerText = lon.toFixed(6);
+        async function(position){
 
-    // نقل الدبوس على الخريطة بسلاسة وتوسيط الشاشة عليه
-    marker.setLatLng([lat, lon]);
-    map.setView([lat, lon], 15);
+            const userLat = position.coords.latitude;
+            const userLng = position.coords.longitude;
 
-    try {
-        const response = await fetch(
-            `https://us1.locationiq.com/v1/reverse?key=${LOCATION_IQ_TOKEN}&lat=${globalLat}&lon=${globalLon}&format=json&accept-language=ar`
-        );
-        
-        if (!response.ok) throw new Error("فشل الاتصال بالـ API");
-        
-        const data = await response.json();
+            try{
 
-        if (data && data.address) {
-            const addr = data.address;
+                const response = await fetch(
+                    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${userLat}&lon=${userLng}`
+                );
 
-            // استخراج المحافظة والمركز لأي مكان يفتحه المستخدم ديناميكياً
-            dynamicGov = addr.state || addr.province || addr.region || "غير محدد";
-            dynamicCity = addr.city || addr.town || addr.county || addr.municipality || "غير محدد";
+                const data = await response.json();
 
-            let village = addr.village || addr.suburb || addr.neighbourhood || addr.residential || addr.quarter || "";
-            let street = addr.road || addr.street || "";
+                const address = data.address || {};
 
-            // تفكيك ذكي للنص الكامل لو الـ address object ناقص
-            if (data.display_name) {
-                const parts = data.display_name.split(",").map(p => p.trim());
-                if (!village) village = parts[1] || "غير محدد";
-                if (!street) street = parts[0] || "شارع فرعي";
+                document.getElementById("locationInfo").innerHTML = `
+
+                    <div class="card">
+
+                        <h2>Your Location</h2>
+
+                        <div class="info">
+                            <strong>Latitude:</strong>
+                            ${userLat}
+                        </div>
+
+                        <div class="info">
+                            <strong>Longitude:</strong>
+                            ${userLng}
+                        </div>
+
+                        <div class="info">
+                            <strong>Street:</strong>
+                            ${address.road || "Not Found"}
+                        </div>
+
+                        <div class="info">
+                            <strong>Area:</strong>
+                            ${address.suburb || address.neighbourhood || "Not Found"}
+                        </div>
+
+                        <div class="info">
+                            <strong>City:</strong>
+                            ${address.city || address.town || address.village || "Not Found"}
+                        </div>
+
+                        <div class="info">
+                            <strong>Governorate:</strong>
+                            ${address.state || "Not Found"}
+                        </div>
+
+                        <div class="info">
+                            <strong>Country:</strong>
+                            ${address.country || "Not Found"}
+                        </div>
+
+                        <br>
+
+                        <div class="info">
+                            <strong>Full Address:</strong>
+                            <br>
+                            ${data.display_name}
+                        </div>
+
+                    </div>
+
+                `;
+
+                findNearestPharmacies(
+                    userLat,
+                    userLng
+                );
+
+            }
+            catch(error){
+
+                console.error(error);
+
+                alert(
+                    "Failed to get address details."
+                );
             }
 
-            // تحديث قيم الـ Spans والـ Inputs على الشاشة فوراً
-            document.getElementById("citySpan").innerText = dynamicCity;
-            document.getElementById("governorateSpan").innerText = dynamicGov;
-            document.getElementById("villageInput").value = village;
-            document.getElementById("streetInput").value = street;
+        },
 
-            // مزامنة فورية لتحديث الـ Payload والـ Spans المتبقية
-            syncManualChanges();
+        function(error){
+
+            alert(
+                "Location permission denied."
+            );
+
         }
-    } catch (error) {
-        console.error("Reverse Geocoding Error:", error);
-    }
+
+    );
 }
 
-// 4. المزامنة النهائية: تجمع البيانات وتحدث الـ Payload الجاهز للباكيند لحظة بلحظة
-function syncManualChanges() {
-    const village = document.getElementById("villageInput").value || "غير محدد";
-    const street = document.getElementById("streetInput").value || "غير محدد";
+// Find Nearest Pharmacies
 
-    document.getElementById("villageSpan").innerText = village;
-    document.getElementById("streetSpan").innerText = street;
+function findNearestPharmacies(
+    userLat,
+    userLng
+){
 
-    document.getElementById("backendJson").textContent = JSON.stringify({
-        latitude: globalLat,
-        longitude: globalLon,
-        governorate: dynamicGov,
-        city: dynamicCity,
-        village: village,
-        street: street,
-        formatted_address: `${street}، ${village}، ${dynamicCity}، ${dynamicGov}`,
-        updated_at: new Date().toISOString()
-    }, null, 2);
+    let nearest = pharmacies.map(pharmacy => {
+
+        const distance = getDistance(
+            userLat,
+            userLng,
+            pharmacy.lat,
+            pharmacy.lng
+        );
+
+        return {
+            ...pharmacy,
+            distance
+        };
+    });
+
+    nearest.sort(
+        (a,b) => a.distance - b.distance
+    );
+
+    let html = `
+        <div class="card">
+            <h2>Nearest Pharmacies</h2>
+    `;
+
+    nearest.forEach(pharmacy => {
+
+        html += `
+
+            <div class="pharmacy">
+
+                <h3>${pharmacy.name}</h3>
+
+                <p class="distance">
+                    Distance:
+                    ${pharmacy.distance.toFixed(2)}
+                    KM
+                </p>
+
+                <p>
+                    Latitude:
+                    ${pharmacy.lat}
+                </p>
+
+                <p>
+                    Longitude:
+                    ${pharmacy.lng}
+                </p>
+
+            </div>
+
+        `;
+    });
+
+    html += `</div>`;
+
+    document.getElementById(
+        "pharmacies"
+    ).innerHTML = html;
 }
 
-// تشغيل الخريطة والسيستم تلقائياً فور تحميل الواجهة
-window.onload = initMap;
 </script>
 
 </body>
