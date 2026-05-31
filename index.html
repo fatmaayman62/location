@@ -189,6 +189,161 @@ async function getLocation(){
 </script>
 
 </body>
+</html>}
+
+button{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:8px;
+    background:#007bff;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#0056b3;
+}
+
+.result{
+    margin-top:20px;
+}
+
+.item{
+    padding:10px;
+    border-bottom:1px solid #eee;
+}
+
+.loading{
+    text-align:center;
+    margin-top:20px;
+    color:#666;
+}
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+    <h2>Get User Location</h2>
+
+    <button onclick="getLocation()">
+        Get My Location
+    </button>
+
+    <div id="result"></div>
+
+</div>
+
+<script>
+
+async function getLocation(){
+
+    const result = document.getElementById("result");
+
+    result.innerHTML =
+    `<p class="loading">Getting location...</p>`;
+
+    if(!navigator.geolocation){
+
+        result.innerHTML =
+        `<p>Geolocation is not supported.</p>`;
+
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+
+        async (position)=>{
+
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+
+            try{
+
+                const response = await fetch(
+                    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
+                );
+
+                const data = await response.json();
+
+                const address = data.address || {};
+
+                result.innerHTML = `
+
+                    <div class="item">
+                        <strong>Latitude:</strong>
+                        ${lat}
+                    </div>
+
+                    <div class="item">
+                        <strong>Longitude:</strong>
+                        ${lon}
+                    </div>
+
+                    <div class="item">
+                        <strong>Street:</strong>
+                        ${address.road || "Not Available"}
+                    </div>
+
+                    <div class="item">
+                        <strong>Village / Area:</strong>
+                        ${
+                            address.village ||
+                            address.suburb ||
+                            address.neighbourhood ||
+                            "Not Available"
+                        }
+                    </div>
+
+                    <div class="item">
+                        <strong>City:</strong>
+                        ${
+                            address.city ||
+                            address.town ||
+                            address.county ||
+                            "Not Available"
+                        }
+                    </div>
+
+                    <div class="item">
+                        <strong>Governorate:</strong>
+                        ${address.state || "Not Available"}
+                    </div>
+
+                    <div class="item">
+                        <strong>Country:</strong>
+                        ${address.country || "Not Available"}
+                    </div>
+
+                `;
+
+            }catch(error){
+
+                console.error(error);
+
+                result.innerHTML =
+                `<p>Failed to get address details.</p>`;
+            }
+
+        },
+
+        (error)=>{
+
+            result.innerHTML =
+            `<p style="color:red;">
+                ${error.message}
+            </p>`;
+        }
+
+    );
+}
+
+</script>
+
+</body>
 </html>    border:none;
     border-radius:8px;
     background:#007bff;
